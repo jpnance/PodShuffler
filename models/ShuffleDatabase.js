@@ -1,4 +1,3 @@
-
 function ShuffleDatabase() {
 	this.episodes = [];
 }
