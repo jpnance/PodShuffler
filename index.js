@@ -1,4 +1,5 @@
 const fs = require('fs');
+const crypto = require('crypto');
 
 const ShuffleDatabase = require('./models/ShuffleDatabase');
 const ShuffleDatabaseEpisode = require('./models/ShuffleDatabaseEpisode');
@@ -33,6 +34,7 @@ podcasts.forEach(function(podcast) {
 			if (!existingEpisode) {
 				podcast.episodes.push({
 					guid: item.guid,
+					md5: crypto.createHash('md5').update(item.guid).digest('hex'),
 					title: item.title,
 					url: item.enclosure.url,
 					playCount: 0,
