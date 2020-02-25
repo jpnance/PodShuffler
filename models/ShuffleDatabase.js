@@ -6,9 +6,9 @@ ShuffleDatabase.prototype.addEpisode = function(episode) {
 	this.episodes.push(episode);
 };
 
-ShuffleDatabase.prototype.toBinary = function() {
+ShuffleDatabase.prototype.toItunesSd = function() {
+	// big endian for iTunesSD
 	let data = new Uint8Array(18 + (this.episodes.length * 558));
-
 	let numberOfEpisodes = this.episodes.length;
 
 	// number of episodes
@@ -16,9 +16,9 @@ ShuffleDatabase.prototype.toBinary = function() {
 	data[1] = (numberOfEpisodes & 0x00ff00) >> 8;
 	data[2] = (numberOfEpisodes & 0x0000ff);
 
-	// unknown1
-	data[3] = 0x00;
-	data[4] = 0x00;
+	// unknown1 (always 0x010800)
+	data[3] = 0x01;
+	data[4] = 0x08;
 	data[5] = 0x00;
 
 	// header size (always 0x000012)
@@ -37,11 +37,37 @@ ShuffleDatabase.prototype.toBinary = function() {
 	data[16] = 0x00;
 	data[17] = 0x00;
 
-	for (let i = 0; i < this.episodes.length; i++) {
-		let episodeData = this.episodes[i].toBinary();
+	for (let i = 0; i < numberOfEpisodes; i++) {
+		let episodeData = this.episodes[i].toItunesSd();
 
 		for (let j = 0; j < 558; j++) {
-			data[(558 * i) + j + 18] = episodeData[j];
+			data[18 + (558 * i) + j] = episodeData[j];
+		}
+	}
+
+	return data;
+};
+
+ShuffleDatabase.prototype.toItunesStats = function() {
+	// little endian for iTunesStats
+	let data = new Uint8Array(6 + (this.episodes.length * 18));
+	let numberOfEpisodes = this.episodes.length;
+
+	// number of episodes
+	data[0] = (numberOfEpisodes & 0x0000ff);
+	data[1] = (numberOfEpisodes & 0x00ff00) >> 8;
+	data[2] = (numberOfEpisodes & 0xff0000) >> 16;
+
+	// unknown1
+	data[3] = 0x00;
+	data[4] = 0x00;
+	data[5] = 0x00;
+
+	for (let i = 0; i < numberOfEpisodes; i++) {
+		let episodeData = this.episodes[i].toItunesStats();
+
+		for (let j = 0; j < 18; j++) {
+			data[6 + (18 * i) + j] = episodeData[j];
 		}
 	}
 

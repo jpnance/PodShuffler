@@ -1,6 +1,8 @@
 function ShuffleDatabaseEpisode(filename, fileType) {
 	this.filename = filename;
 	this.fileType = fileType;
+	this.playCount = 0;
+	this.skipCount = 0;
 
 	for (let i = 0; i < filename.length; i++) {
 		this.filename[(i * 2) + 1] = filename.charCodeAt(i);
@@ -17,18 +19,19 @@ function ShuffleDatabaseEpisode(filename, fileType) {
 	}
 }
 
-ShuffleDatabaseEpisode.prototype.toBinary = function() {
+ShuffleDatabaseEpisode.prototype.toItunesSd = function() {
+	// big endian for iTunesSD
 	let data = new Uint8Array(558);
 
-	// entry size (always 0x0022e)
+	// entry size (always 0x00022e)
 	data[0] = 0x00;
 	data[1] = 0x02;
 	data[2] = 0x2e;
 
-	// unknown1
-	data[3] = 0x00;
-	data[4] = 0x00;
-	data[5] = 0x00;
+	// unknown1 (always 0x5aa501)
+	data[3] = 0x5a;
+	data[4] = 0xa5;
+	data[5] = 0x01;
 
 	// start time (0x000000 until we want to get much more advanced)
 	data[6] = 0x00;
@@ -79,14 +82,15 @@ ShuffleDatabaseEpisode.prototype.toBinary = function() {
 		data[29] = 0x04;
 	}
 
-	// unknown6
+	// unknown6 (always 0x000200)
 	data[30] = 0x00;
-	data[31] = 0x00;
+	data[31] = 0x02;
 	data[32] = 0x00;
 
 	// filename
 	for (let i = 0; i < 522; i++) {
-		data[(i * 2) + 1 + 33] = this.filename.charCodeAt(i);
+		data[33 + (i * 2)] = this.filename.charCodeAt(i);
+		data[33 + (i * 2) + 1] = 0x00;
 	}
 
 	// shuffleable (0 until we want to get much more advanced)
@@ -100,5 +104,49 @@ ShuffleDatabaseEpisode.prototype.toBinary = function() {
 
 	return data;
 };
+
+ShuffleDatabaseEpisode.prototype.toItunesStats = function() {
+	// little endian for iTunesStats
+	let data = new Uint8Array(18);
+
+	// entry size (always 0x120000)
+	data[0] = 0x12;
+	data[1] = 0x00;
+	data[2] = 0x00;
+
+	// bookmark time (0xffffff if play count is 0)
+	if (this.playCount == 0) {
+		data[3] = 0xff;
+		data[4] = 0xff;
+		data[5] = 0xff;
+	}
+	else {
+		data[3] = 0x00;
+		data[4] = 0x00;
+		data[5] = 0x00;
+	}
+
+	// unknown1
+	data[6] = 0x00;
+	data[7] = 0x00;
+	data[8] = 0x00;
+
+	// unknown2
+	data[9] = 0x00;
+	data[10] = 0x00;
+	data[11] = 0x00;
+
+	// play count
+	data[12] = (this.playCount & 0x0000ff);
+	data[13] = (this.playCount & 0x00ff00) >> 8;
+	data[14] = (this.playCount & 0xff0000) >> 16;
+
+	// skip count
+	data[15] = (this.skipCount & 0x0000ff);
+	data[16] = (this.skipCount & 0x00ff00) >> 8;
+	data[17] = (this.skipCount & 0xff0000) >> 16;
+
+	return data;
+}
 
 module.exports = ShuffleDatabaseEpisode;

@@ -1,5 +1,7 @@
 const fs = require('fs');
 const crypto = require('crypto');
+const http = require('follow-redirects').http;
+const https = require('follow-redirects').https;
 
 const ShuffleDatabase = require('./models/ShuffleDatabase');
 const ShuffleDatabaseEpisode = require('./models/ShuffleDatabaseEpisode');
@@ -47,34 +49,67 @@ podcasts.forEach(function(podcast) {
 });
 
 Promise.all(rssPromises).then(function() {
-	fs.writeFileSync('podcasts.json', JSON.stringify(podcasts, null, "\t"));
+	let downloadPromises = [];
+	let shuffleDatabase = new ShuffleDatabase();
+
+	podcasts.forEach(function(podcast) {
+		let protocol;
+		let episode;
+
+		if (podcast.type == 'daily') {
+			episode = podcast.episodes[0];
+		}
+		else if (podcast.type == 'randomizable') {
+			episode = podcast.episodes[Math.floor(Math.random() * podcast.episodes.length)];
+		}
+
+		let episodeFile = fs.createWriteStream('./sync/' + episode.md5.substring(0, 8) + '.mp3');
+
+		if (episode.url.startsWith('https')) {
+			protocol = https;
+		}
+		else {
+			protocol = http;
+		}
+
+		downloadPromises.push(new Promise(function(resolve, reject) {
+			protocol.get(episode.url, function(response) {
+				response.on('data', function(data) {
+					episodeFile.write(data);
+				}).on('end', function() {
+					episodeFile.end();
+					resolve();
+				});
+			});
+		}));
+
+		shuffleDatabase.addEpisode(new ShuffleDatabaseEpisode('/' + episode.md5.substring(0, 8) + '.mp3', 'mp3'));
+	});
+
+	//fs.writeFileSync('podcasts.json', JSON.stringify(podcasts, null, "\t"));
+	//fs.writeFileSync('podcasts.json', JSON.stringify(podcasts));
+
+	Promise.all(downloadPromises).then(function() {
+		let iTunesSDFile;
+		let iTunesStatsFile;
+
+		try {
+			fs.accessSync('./sync/iTunesSD', fs.constants.R_OK);
+		} catch (error) {
+			fs.writeFileSync('./sync/iTunesSD');
+		}
+
+		iTunesSDFile = fs.readFileSync('./sync/iTunesSD');
+
+		try {
+			fs.accessSync('./sync/iTunesStats', fs.constants.R_OK);
+		} catch (error) {
+			fs.writeFileSync('./sync/iTunesStats');
+		}
+
+		iTunesStatsFile = fs.readFileSync('./sync/iTunesStats');
+
+		fs.writeFileSync('./sync/iTunesSD', shuffleDatabase.toItunesSd(), { encoding: 'utf8' });
+		fs.writeFileSync('./sync/iTunesStats', shuffleDatabase.toItunesStats(), { encoding: 'utf8' });
+	});
 });
-
-/*
-let iTunesSDFile;
-let iTunesStatsFile;
-
-try {
-	fs.accessSync('iTunesSD', fs.constants.R_OK);
-} catch (error) {
-	fs.writeFileSync('iTunesSD');
-}
-
-iTunesSDFile = fs.readFileSync('iTunesSD');
-
-try {
-	fs.accessSync('iTunesStats', fs.constants.R_OK);
-} catch (error) {
-	fs.writeFileSync('iTunesStats');
-}
-
-iTunesStatsFile = fs.readFileSync('iTunesStats');
-
-let shuffleDatabase = new ShuffleDatabase();
-
-shuffleDatabase.addEpisode(new ShuffleDatabaseEpisode('lol/whathaveyou/aoeu.mp3', 'mp3'));
-shuffleDatabase.addEpisode(new ShuffleDatabaseEpisode('and/then/howbout/a/nother.wav', 'wav'));
-shuffleDatabase.addEpisode(new ShuffleDatabaseEpisode('okaybutthenjustonemore.aac', 'aac'));
-
-fs.writeFileSync('iTunesSD', shuffleDatabase.toBinary(), { encoding: 'utf8' });
-*/

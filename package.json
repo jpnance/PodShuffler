@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "follow-redirects": "^1.10.0",
     "rss-parser": "^3.7.5"
   }
 }
