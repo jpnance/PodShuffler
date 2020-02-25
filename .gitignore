@@ -1,6 +1,8 @@
 *.swp
 node_modules/
 
+podcasts.json
+
 iTunesSD
 iTunesStats
 iTunesPrefs
