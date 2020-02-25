@@ -1,0 +1,2 @@
+* It seems like filenames *must* start with '/'.
+* It doesn't seem like iTunesControl, iTunesDB, iTunesPrefs, or iTunesPrefs.plist need to exist.
