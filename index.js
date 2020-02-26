@@ -11,7 +11,7 @@ const getopts = require('getopts');
 const RssParser = require('rss-parser');
 const rssParser = new RssParser();
 
-const commands = ['add', 'refresh'];
+const commands = ['add', 'list', 'refresh'];
 
 let cliOptions = getopts(process.argv.slice(2), { stopEarly: true });
 let command = cliOptions._[0];
@@ -27,6 +27,9 @@ if (!command || !commands.includes(command)) {
 
 if (command == 'add') {
 	addCommand(getopts(cliOptions._.slice(1), { default: { db: 'podcasts.json' } }));
+}
+else if (command == 'list') {
+	listCommand(getopts(cliOptions._.slice(1), { default: { db: 'podcasts.json' } }));
 }
 else if (command == 'refresh') {
 	refreshCommand(getopts(cliOptions._.slice(1), { default: { db: 'podcasts.json' } }));
@@ -79,6 +82,22 @@ function addPodcast(podcastDatabase, podcast) {
 	}
 
 	podcastDatabase.push(podcast);
+}
+
+function listCommand(cliOptions) {
+	let filename = cliOptions['db'];
+	let podcastDatabase = loadPodcastDatabase(filename);
+
+	Object.freeze(podcastDatabase);
+
+	podcastDatabase.forEach(function(podcast) {
+		console.log(podcast.name, '(' + podcast.shortName + ')');
+		console.log(podcast.feedUrl, '(' + podcast.episodes.length + ' known episodes)');
+		console.log(podcast.type);
+		console.log();
+	});
+
+	process.exit();
 }
 
 function loadPodcastDatabase(filename) {
