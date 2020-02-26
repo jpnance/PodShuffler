@@ -16,8 +16,12 @@ const commands = ['add', 'help', 'list', 'refresh'];
 let cliOptions = getopts(process.argv.slice(2), { stopEarly: true });
 let command = cliOptions._[0];
 
-if (!command || !commands.includes(command)) {
+if (!command) {
 	helpCommand({}, 1);
+	process.exit(1);
+}
+else if (!commands.includes(command)) {
+	console.error('podshuffler: \'' + command + '\' is not a podshuffler command. Try `podshuffler help`.');
 	process.exit(1);
 }
 
