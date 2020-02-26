@@ -181,16 +181,6 @@ function verifyAddCommandOptions(cliOptions) {
 }
 
 /*
-let rssPromises = [];
-
-podcasts.forEach(function(podcast) {
-	if (!podcast.episodes) {
-		podcast.episodes = [];
-	}
-
-	rssPromises.push();
-});
-
 Promise.all(rssPromises).then(function() {
 	process.exit();
 
