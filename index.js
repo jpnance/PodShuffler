@@ -20,7 +20,9 @@ if (!command || !commands.includes(command)) {
 	console.error('usage: podshuffler <command> [<options>]');
 	console.error();
 	console.error('Commands:');
-	console.error('  add    Add a podcast feed to your database');
+	console.error('  add      Add a new podcast');
+	console.error('  list     Show high-level podcast information');
+	console.error('  refresh  Fetch new episodes');
 
 	process.exit(1);
 }
