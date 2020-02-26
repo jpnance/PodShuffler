@@ -6,6 +6,48 @@ ShuffleDatabase.prototype.addEpisode = function(episode) {
 	this.episodes.push(episode);
 };
 
+ShuffleDatabase.prototype.toItunesPState = function() {
+	// little endian for iTunesPState
+	let data = new Uint8Array(21);
+
+	// volume
+	data[0] = 0x1d;
+	data[1] = 0x00;
+	data[2] = 0x00;
+
+	// shuffle position
+	data[3] = 0x00;
+	data[4] = 0x00;
+	data[5] = 0x00;
+
+	// track number
+	data[6] = 0x00;
+	data[7] = 0x00;
+	data[8] = 0x00;
+
+	// shuffle flag
+	data[9] = 0x00;
+	data[10] = 0x00;
+	data[11] = 0x00;
+
+	// track position
+	data[12] = 0x00;
+	data[13] = 0x00;
+	data[14] = 0x00;
+
+	// unknown1
+	data[15] = 0x00;
+	data[16] = 0x00;
+	data[17] = 0x00;
+
+	// unknown2 (always 0x010000)
+	data[18] = 0x01;
+	data[19] = 0x00;
+	data[20] = 0x00;
+
+	return data;
+};
+
 ShuffleDatabase.prototype.toItunesSd = function() {
 	// big endian for iTunesSD
 	let data = new Uint8Array(18 + (this.episodes.length * 558));
