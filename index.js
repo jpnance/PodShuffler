@@ -11,7 +11,7 @@ const getopts = require('getopts');
 const RssParser = require('rss-parser');
 const rssParser = new RssParser();
 
-const commands = ['add', 'help', 'list', 'refresh'];
+const commands = ['add', 'diagnostic', 'help', 'list', 'refresh'];
 
 let cliOptions = getopts(process.argv.slice(2), { stopEarly: true });
 let command = cliOptions._[0];
@@ -27,6 +27,9 @@ else if (!commands.includes(command)) {
 
 if (command == 'add') {
 	addCommand(getopts(cliOptions._.slice(1), { default: { db: 'podcasts.json' } }));
+}
+else if (command == 'diagnostic') {
+	diagnosticCommand(getopts(cliOptions._.slice(1), { default: { db: 'podcasts.json' } }));
 }
 else if (command == 'help') {
 	helpCommand(getopts(cliOptions._.slice(1)));
@@ -86,6 +89,31 @@ function addPodcast(podcastDatabase, podcast) {
 	}
 
 	podcastDatabase.push(podcast);
+}
+
+function diagnosticCommand(cliOptions) {
+	let filename = cliOptions['db'];
+	let podcastDatabase = loadPodcastDatabase(filename);
+
+	Object.freeze(podcastDatabase);
+
+	let existingEpisodeHashes = [];
+
+	podcastDatabase.forEach(function(podcast) {
+		podcast.episodes.forEach(function(episode) {
+			let shortMd5 = episode.md5.substring(0, 8);
+
+			if (existingEpisodeHashes.includes(shortMd5)) {
+				console.error('oh wow collision bad');
+				process.exit(1);
+			}
+
+			existingEpisodeHashes.push(shortMd5);
+		});
+	});
+
+	console.log('hey seems fine');
+	process.exit();
 }
 
 function helpCommand(cliOptions, exitCode) {
