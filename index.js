@@ -6,28 +6,102 @@ const https = require('follow-redirects').https;
 const ShuffleDatabase = require('./models/ShuffleDatabase');
 const ShuffleDatabaseEpisode = require('./models/ShuffleDatabaseEpisode');
 
+const getopts = require('getopts');
+
 const RssParser = require('rss-parser');
 const rssParser = new RssParser();
 
-let podcastsFile;
+const commands = ['add'];
 
-try {
-	fs.accessSync('podcasts.json', fs.constants.R_OK);
-} catch (error) {
-	fs.writeFileSync('podcasts.json', JSON.stringify([]));
+let cliOptions = getopts(process.argv.slice(2), { stopEarly: true });
+let command = cliOptions._[0];
+
+if (!command || !commands.includes(command)) {
+	console.error('usage: podshuffler <command> [<options>]');
+	console.error();
+	console.error('Commands:');
+	console.error('  add    Add a podcast feed to your database');
+
+	process.exit(1);
 }
 
-podcastsFile = fs.readFileSync('podcasts.json');
+if (command == 'add') {
+	addCommand(getopts(cliOptions._.slice(1), { default: { db: 'podcasts.json' } }));
+}
 
-let podcasts = JSON.parse(podcastsFile);
-let rssPromises = [];
-
-podcasts.forEach(function(podcast) {
-	if (!podcast.episodes) {
-		podcast.episodes = [];
+function addCommand(cliOptions) {
+	if (!verifyAddCommandOptions(cliOptions)) {
+		console.error('usage: podshuffler add [options] <feed URL>');
+		process.exit(1);
 	}
 
-	rssPromises.push(rssParser.parseURL(podcast.feedUrl).then(function(feed) {
+	let filename = cliOptions['db'];
+	let podcastDatabase = loadPodcastDatabase(filename);
+
+	let newPodcast = {
+		name: undefined,
+		shortName: cliOptions['short-name'],
+		feedUrl: cliOptions._[0],
+		type: cliOptions['type'] || 'daily',
+
+		episodes: []
+	};
+
+	refreshPodcast(newPodcast).then(function() {
+		addPodcast(podcastDatabase, newPodcast);
+		savePodcastDatabase(filename, podcastDatabase);
+
+		newPodcast.episodes = newPodcast.episodes.length + ' episodes';
+		console.log(newPodcast);
+
+		process.exit();
+	}).catch(function(error) {
+		console.error(error);
+		process.exit(1);
+	});
+}
+
+function addPodcast(podcastDatabase, podcast) {
+	let existingPodcastFeedUrl = podcastDatabase.find(function(existingPodcast) { return existingPodcast.feedUrl == podcast.feedUrl; });
+	let existingPodcastShortName = podcastDatabase.find(function(existingPodcast) { return existingPodcast.shortName == podcast.shortName; });
+
+	if (existingPodcastFeedUrl) {
+		console.error('A podcast with that feed URL already exists.')
+		process.exit(1);
+	}
+
+	if (existingPodcastShortName) {
+		console.error('A podcast with that short name already exists.')
+		process.exit(1);
+	}
+
+	podcastDatabase.push(podcast);
+}
+
+function loadPodcastDatabase(filename) {
+	let podcastsFile;
+
+	filename = filename || 'podcasts.json';
+
+	try {
+		fs.accessSync(filename, fs.constants.R_OK);
+	} catch (error) {
+		fs.writeFileSync(filename, JSON.stringify([]));
+	}
+
+	podcastsFile = fs.readFileSync(filename);
+
+	return JSON.parse(podcastsFile);
+}
+
+function refreshPodcast(podcast) {
+	return rssParser.parseURL(podcast.feedUrl).then(function(feed) {
+		if (!podcast.shortName) {
+			podcast.shortName = feed.title.replace(/ /g, '-').toLowerCase();
+		}
+
+		podcast.name = feed.title;
+
 		feed.items.forEach(function(item) {
 			let existingEpisode = podcast.episodes.find(function(episode) {
 				return episode.guid == item.guid;
@@ -45,10 +119,36 @@ podcasts.forEach(function(podcast) {
 				});
 			}
 		});
-	}));
+	});
+}
+
+function savePodcastDatabase(filename, podcastDatabase) {
+	fs.writeFileSync(filename, JSON.stringify(podcastDatabase));
+}
+
+function verifyAddCommandOptions(cliOptions) {
+	if (cliOptions._.length == 0) {
+		console.error('No feed URL specified.');
+		return false;
+	}
+
+	return true;
+}
+
+/*
+let rssPromises = [];
+
+podcasts.forEach(function(podcast) {
+	if (!podcast.episodes) {
+		podcast.episodes = [];
+	}
+
+	rssPromises.push();
 });
 
 Promise.all(rssPromises).then(function() {
+	process.exit();
+
 	let downloadPromises = [];
 	let shuffleDatabase = new ShuffleDatabase();
 
@@ -113,3 +213,4 @@ Promise.all(rssPromises).then(function() {
 		fs.writeFileSync('./sync/iTunesStats', shuffleDatabase.toItunesStats(), { encoding: 'utf8' });
 	});
 });
+*/
