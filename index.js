@@ -91,8 +91,12 @@ function listCommand(cliOptions) {
 	Object.freeze(podcastDatabase);
 
 	podcastDatabase.forEach(function(podcast) {
+		let knownEpisodes = podcast.episodes.length;
+		let unlistenedEpisodes = podcast.episodes.map(function(episode) { return !episode.listened; }).length;
+
 		console.log(podcast.name, '(' + podcast.shortName + ')');
-		console.log(podcast.feedUrl, '(' + podcast.episodes.length + ' known episodes)');
+		console.log(podcast.feedUrl);
+		console.log(knownEpisodes + ' known episodes, ' + unlistenedEpisodes + ' unlistened');
 		console.log(podcast.type);
 		console.log();
 	});
