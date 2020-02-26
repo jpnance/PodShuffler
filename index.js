@@ -11,25 +11,23 @@ const getopts = require('getopts');
 const RssParser = require('rss-parser');
 const rssParser = new RssParser();
 
-const commands = ['add', 'list', 'refresh'];
+const commands = ['add', 'help', 'list', 'refresh'];
 
 let cliOptions = getopts(process.argv.slice(2), { stopEarly: true });
 let command = cliOptions._[0];
 
 if (!command || !commands.includes(command)) {
-	console.error('usage: podshuffler <command> [<options>]');
-	console.error();
-	console.error('Commands:');
-	console.error('  add      Add a new podcast');
-	console.error('  list     Show high-level podcast information');
-	console.error('  refresh  Fetch new episodes');
-
+	helpCommand({}, 1);
 	process.exit(1);
 }
 
 if (command == 'add') {
 	addCommand(getopts(cliOptions._.slice(1), { default: { db: 'podcasts.json' } }));
 }
+else if (command == 'help') {
+	helpCommand(getopts(cliOptions._.slice(1)));
+}
+
 else if (command == 'list') {
 	listCommand(getopts(cliOptions._.slice(1), { default: { db: 'podcasts.json' } }));
 }
@@ -84,6 +82,19 @@ function addPodcast(podcastDatabase, podcast) {
 	}
 
 	podcastDatabase.push(podcast);
+}
+
+function helpCommand(cliOptions, exitCode) {
+	if (!cliOptions || !cliOptions._ || cliOptions._.length == 0) {
+		console.log('usage: podshuffler <command> [<options>]');
+		console.log();
+		console.log('Commands:');
+		console.log('  add      Add a new podcast');
+		console.log('  list     Show high-level podcast information');
+		console.log('  refresh  Fetch new episode information');
+	}
+
+	process.exit(exitCode || 0);
 }
 
 function listCommand(cliOptions) {
