@@ -11,7 +11,7 @@ const getopts = require('getopts');
 const RssParser = require('rss-parser');
 const rssParser = new RssParser();
 
-const commands = ['add'];
+const commands = ['add', 'refresh'];
 
 let cliOptions = getopts(process.argv.slice(2), { stopEarly: true });
 let command = cliOptions._[0];
@@ -27,6 +27,9 @@ if (!command || !commands.includes(command)) {
 
 if (command == 'add') {
 	addCommand(getopts(cliOptions._.slice(1), { default: { db: 'podcasts.json' } }));
+}
+else if (command == 'refresh') {
+	refreshCommand(getopts(cliOptions._.slice(1), { default: { db: 'podcasts.json' } }));
 }
 
 function addCommand(cliOptions) {
@@ -92,6 +95,25 @@ function loadPodcastDatabase(filename) {
 	podcastsFile = fs.readFileSync(filename);
 
 	return JSON.parse(podcastsFile);
+}
+
+function refreshCommand(cliOptions) {
+	let filename = cliOptions['db'];
+	let podcastDatabase = loadPodcastDatabase(filename);
+
+	let refreshPodcastPromises = [];
+
+	podcastDatabase.forEach(function(podcast) {
+		refreshPodcastPromises.push(refreshPodcast(podcast));
+	});
+
+	Promise.all(refreshPodcastPromises).then(function() {
+		savePodcastDatabase(filename, podcastDatabase);
+		process.exit();
+	}).catch(function(error) {
+		console.error(error);
+		process.exit(1);
+	});
 }
 
 function refreshPodcast(podcast) {
