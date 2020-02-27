@@ -1,5 +1,77 @@
-function ShuffleDatabase() {
+function ShuffleDatabase(shuffleDatabaseFile, shuffleStatsFile, shufflePlayerStateFile) {
 	this.episodes = [];
+
+	if (shuffleDatabaseFile && shuffleStatsFile && shufflePlayerStateFile) {
+		let numberOfEpisodesFromDatabase = 0;
+		let numberOfEpisodesFromStats = 0;
+
+		numberOfEpisodesFromDatabase += (shuffleDatabaseFile[0] << 16);
+		numberOfEpisodesFromDatabase += (shuffleDatabaseFile[1] << 8);
+		numberOfEpisodesFromDatabase += shuffleDatabaseFile[2];
+
+		numberOfEpisodesFromStats += shuffleStatsFile[0];
+		numberOfEpisodesFromStats += (shuffleStatsFile[1] << 8);
+		numberOfEpisodesFromStats += (shuffleStatsFile[2] << 16);
+
+		if (numberOfEpisodesFromDatabase != numberOfEpisodesFromStats) {
+			console.error('no clue how we got here');
+			process.exit(1);
+		}
+
+		for (let i = 0; i < numberOfEpisodesFromDatabase; i++) {
+			let filename = '';
+
+			for (let j = 0; j < 522; j++) {
+				let character = String.fromCharCode(shuffleDatabaseFile[18 + (i * 558) + 33 + j]);
+
+				if (character != '\x00') {
+					filename += character;
+				}
+			}
+
+			let bookmarkTime = 0;
+
+			bookmarkTime += shuffleStatsFile[6 + (i * 18) + 3];
+			bookmarkTime += (shuffleStatsFile[6 + (i * 18) + 4] << 8);
+			bookmarkTime += (shuffleStatsFile[6 + (i * 18) + 5] << 16);
+
+			let playCount = 0;
+
+			playCount += shuffleStatsFile[6 + (i * 18) + 12];
+			playCount += (shuffleStatsFile[6 + (i * 18) + 13] << 8);
+			playCount += (shuffleStatsFile[6 + (i * 18) + 14] << 16);
+
+			let skipCount = 0;
+
+			skipCount += shuffleStatsFile[6 + (i * 18) + 15];
+			skipCount += (shuffleStatsFile[6 + (i * 18) + 16] << 8);
+			skipCount += (shuffleStatsFile[6 + (i * 18) + 17] << 16);
+
+			this.episodes.push({
+				filename: filename,
+				bookmarkTime: bookmarkTime,
+				playCount: playCount,
+				skipCount: skipCount
+			});
+		}
+
+		let playbackTrackNumber = 0;
+
+		playbackTrackNumber += shufflePlayerStateFile[4];
+		playbackTrackNumber += (shufflePlayerStateFile[5] << 8);
+		playbackTrackNumber += (shufflePlayerStateFile[6] << 16);
+		playbackTrackNumber += (shufflePlayerStateFile[7] << 24);
+		playbackTrackNumber += (shufflePlayerStateFile[8] << 32);
+		playbackTrackNumber += (shufflePlayerStateFile[9] << 40);
+		playbackTrackNumber += (shufflePlayerStateFile[10] << 48);
+		playbackTrackNumber += (shufflePlayerStateFile[11] << 56);
+
+		let playbackTrackPosition = 0;
+
+		playbackTrackPosition += shufflePlayerStateFile[12];
+		playbackTrackPosition += (shufflePlayerStateFile[13] << 8);
+		playbackTrackPosition += (shufflePlayerStateFile[14] << 16);
+	}
 }
 
 ShuffleDatabase.prototype.addEpisode = function(episode) {
@@ -7,25 +79,25 @@ ShuffleDatabase.prototype.addEpisode = function(episode) {
 };
 
 ShuffleDatabase.prototype.toItunesPState = function() {
+	// the iTunesPState spec is definitely wrong
+
 	// little endian for iTunesPState
 	let data = new Uint8Array(21);
 
 	// volume
 	data[0] = 0x1d;
 	data[1] = 0x00;
-	data[2] = 0x00;
 
-	// shuffle position
+	// ???
+	data[2] = 0x00;
 	data[3] = 0x00;
-	data[4] = 0x00;
-	data[5] = 0x00;
 
 	// track number
+	data[4] = 0x00;
+	data[5] = 0x00;
 	data[6] = 0x00;
 	data[7] = 0x00;
 	data[8] = 0x00;
-
-	// shuffle flag
 	data[9] = 0x00;
 	data[10] = 0x00;
 	data[11] = 0x00;

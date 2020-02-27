@@ -11,7 +11,7 @@ const getopts = require('getopts');
 const RssParser = require('rss-parser');
 const rssParser = new RssParser();
 
-const commands = ['add', 'diagnostic', 'help', 'list', 'refresh', 'stage'];
+const commands = ['add', 'diagnostic', 'help', 'list', 'pull', 'refresh', 'stage'];
 
 let cliOptions = getopts(process.argv.slice(2), { stopEarly: true });
 let command = cliOptions._[0];
@@ -34,9 +34,11 @@ else if (command == 'diagnostic') {
 else if (command == 'help') {
 	helpCommand(getopts(cliOptions._.slice(1)));
 }
-
 else if (command == 'list') {
 	listCommand(getopts(cliOptions._.slice(1), { default: { db: 'podcasts.json' } }));
+}
+else if (command == 'pull') {
+	pullCommand(getopts(cliOptions._.slice(1), { default: { db: 'podcasts.json' } }));
 }
 else if (command == 'refresh') {
 	refreshCommand(getopts(cliOptions._.slice(1), { default: { db: 'podcasts.json' } }));
@@ -127,6 +129,7 @@ function helpCommand(cliOptions, exitCode) {
 		console.log('  add      Add a new podcast');
 		console.log('  help     Show more information about a command');
 		console.log('  list     Show high-level podcast information');
+		console.log('  pull     Fetch and merge play data from the iPod Shuffle');
 		console.log('  refresh  Fetch new episode information');
 		console.log('  stage    Select and download episodes');
 	}
@@ -170,6 +173,54 @@ function loadPodcastDatabase(filename) {
 	return JSON.parse(podcastsFile);
 }
 
+function mergeShuffleDatabase(shuffleDatabase, podcastDatabase) {
+	shuffleDatabase.episodes.forEach(function(shuffleEpisode) {
+		let episodeRegexp = /\/(.*?)-([0123456789abcdef]{8})\.(...)/;
+		let [filename, feedShortName, episodeShortMd5, episodeFileType] = shuffleEpisode.filename.match(episodeRegexp);
+
+		podcastDatabase.forEach(function(podcast) {
+			if (podcast.shortName != feedShortName) {
+				return;
+			}
+
+			podcast.episodes.forEach(function(episode) {
+				if (!episode.md5.startsWith(episodeShortMd5)) {
+					return;
+				}
+
+				episode.bookmarkTime = shuffleEpisode.bookmarkTime;
+
+				if (shuffleEpisode.playCount > 0) {
+					episode.listened = true;
+					episode.queuedUp = false;
+				}
+				else {
+					episode.listened = false;
+					episode.queuedUp = true;
+				}
+			});
+		});
+	});
+}
+
+function pullCommand(cliOptions) {
+	let filename = cliOptions['db'];
+	let podcastDatabase = loadPodcastDatabase(filename);
+
+	let path = cliOptions['path'] || '.';
+
+	let shuffleDatabaseFile = fs.readFileSync(path + '/iTunesSD');
+	let shuffleStatsFile = fs.readFileSync(path + '/iTunesStats');
+	let shufflePlayerStateFile = fs.readFileSync(path + '/iTunesPState');
+
+	let shuffleDatabase = new ShuffleDatabase(shuffleDatabaseFile, shuffleStatsFile, shufflePlayerStateFile);
+
+	mergeShuffleDatabase(shuffleDatabase, podcastDatabase);
+	savePodcastDatabase(filename, podcastDatabase);
+
+	process.exit();
+}
+
 function refreshCommand(cliOptions) {
 	let filename = cliOptions['db'];
 	let podcastDatabase = loadPodcastDatabase(filename);
@@ -208,9 +259,9 @@ function refreshPodcast(podcast) {
 					md5: crypto.createHash('md5').update(item.guid).digest('hex'),
 					title: item.title,
 					url: item.enclosure.url,
-					playCount: 0,
-					skipCount: 0,
-					listened: false
+					bookmarkTime: 0,
+					listened: false,
+					queuedUp: false
 				});
 			}
 		});
@@ -225,29 +276,47 @@ function stageCommand(cliOptions) {
 	let filename = cliOptions['db'];
 	let podcastDatabase = loadPodcastDatabase(filename);
 
-	Object.freeze(podcastDatabase);
-
 	let downloadPromises = [];
 	let shuffleDatabase = new ShuffleDatabase();
 
 	podcastDatabase.forEach(function(podcast) {
 		let protocol;
 		let episode;
+		let queuedUpEpisode;
 
-		if (podcast.type == 'daily') {
-			episode = podcast.episodes[0];
-		}
-		else if (podcast.type == 'serial') {
-			// still needs to be fleshed out; this should actually be finding the oldest unlistened episode
-			episode = podcast.episodes.find(function(element) { return !element.listened; });
-		}
-		else if (podcast.type == 'randomizable') {
-			let unlistenedEpisodes = podcast.episodes.filter(function(element) { return !element.listened; });
+		queuedUpEpisode = podcast.episodes.find(function(episode) { return episode.queuedUp; });
 
-			episode = unlistenedEpisodes[Math.floor(Math.random() * unlistenedEpisodes.length)];
+		if (queuedUpEpisode) {
+			episode = queuedUpEpisode;
 		}
-		else if (podcast.type == 'evergreen') {
-			episode = podcast.episodes[Math.floor(Math.random() * podcast.episodes.length)];
+		else {
+			if (podcast.type == 'daily') {
+				episode = podcast.episodes[0];
+
+				if (episode.listened) {
+					return;
+				}
+			}
+			else if (podcast.type == 'serial') {
+				for (let i = podcast.episodes.length - 1; i >= 0; i--) {
+					if (!podcast.episodes[i].listened) {
+						episode = podcast.episodes[i];
+						break;
+					}
+				}
+			}
+			else if (podcast.type == 'randomizable') {
+				let unlistenedEpisodes = podcast.episodes.filter(function(element) { return !element.listened; });
+
+				episode = unlistenedEpisodes[Math.floor(Math.random() * unlistenedEpisodes.length)];
+			}
+			else if (podcast.type == 'evergreen') {
+				episode = podcast.episodes[Math.floor(Math.random() * podcast.episodes.length)];
+			}
+		}
+
+		if (!episode) {
+			return;
 		}
 
 		let episodeFilename = podcast.shortName + '-' + episode.md5.substring(0, 8) + '.mp3';
@@ -267,7 +336,7 @@ function stageCommand(cliOptions) {
 						episodeFile.write(data);
 					}).on('end', function() {
 						episodeFile.end();
-						shuffleDatabase.addEpisode(new ShuffleDatabaseEpisode('/' + episodeFilename, 'mp3'));
+						shuffleDatabase.addEpisode(new ShuffleDatabaseEpisode('/' + episodeFilename, episode.bookmarkTime || 0xffffff));
 
 						console.log('\u2713 ' + podcast.name + ': ' + episode.title);
 
@@ -275,6 +344,12 @@ function stageCommand(cliOptions) {
 					});
 				});
 			}));
+		}
+		else {
+			episodeFile.end();
+			shuffleDatabase.addEpisode(new ShuffleDatabaseEpisode('/' + episodeFilename, episode.bookmarkTime || 0xffffff));
+
+			console.log('\u2713 ' + podcast.name + ': ' + episode.title);
 		}
 	});
 
@@ -301,6 +376,8 @@ function stageCommand(cliOptions) {
 		fs.writeFileSync('./sync/iTunesSD', shuffleDatabase.toItunesSd(), { encoding: 'utf8' });
 		fs.writeFileSync('./sync/iTunesStats', shuffleDatabase.toItunesStats(), { encoding: 'utf8' });
 		fs.writeFileSync('./sync/iTunesPState', shuffleDatabase.toItunesPState(), { encoding: 'utf8' });
+
+		savePodcastDatabase(filename, podcastDatabase);
 
 		process.exit();
 	});

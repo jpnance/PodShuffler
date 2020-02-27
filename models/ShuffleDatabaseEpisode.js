@@ -1,20 +1,19 @@
-function ShuffleDatabaseEpisode(filename, fileType) {
+function ShuffleDatabaseEpisode(filename, bookmarkTime) {
 	this.filename = filename;
-	this.fileType = fileType;
-	this.playCount = 0;
-	this.skipCount = 0;
+	this.fileType = 'mp3';
+	this.bookmarkTime = bookmarkTime;
 
 	for (let i = 0; i < filename.length; i++) {
 		this.filename[(i * 2) + 1] = filename.charCodeAt(i);
 	}
 
-	if (fileType == 'mp3') {
+	if (this.fileType == 'mp3') {
 		this.fileType[2] = 0x01;
 	}
-	else if (fileType == 'aac') {
+	else if (this.fileType == 'aac') {
 		this.fileType[2] = 0x02;
 	}
-	else if (fileType == 'wav') {
+	else if (this.fileType == 'wav') {
 		this.fileType[2] = 0x04;
 	}
 }
@@ -115,16 +114,9 @@ ShuffleDatabaseEpisode.prototype.toItunesStats = function() {
 	data[2] = 0x00;
 
 	// bookmark time (0xffffff if play count is 0)
-	if (this.playCount == 0) {
-		data[3] = 0xff;
-		data[4] = 0xff;
-		data[5] = 0xff;
-	}
-	else {
-		data[3] = 0x00;
-		data[4] = 0x00;
-		data[5] = 0x00;
-	}
+	data[3] = (this.bookmarkTime & 0x0000ff);
+	data[4] = (this.bookmarkTime & 0x00ff00) >> 8;
+	data[5] = (this.bookmarkTime & 0xff0000) >> 16;
 
 	// unknown1
 	data[6] = 0x00;
@@ -137,9 +129,9 @@ ShuffleDatabaseEpisode.prototype.toItunesStats = function() {
 	data[11] = 0x00;
 
 	// play count
-	data[12] = (this.playCount & 0x0000ff);
-	data[13] = (this.playCount & 0x00ff00) >> 8;
-	data[14] = (this.playCount & 0xff0000) >> 16;
+	data[12] = 0x00;
+	data[13] = 0x00;
+	data[14] = 0x00;
 
 	// skip count
 	data[15] = (this.skipCount & 0x0000ff);
