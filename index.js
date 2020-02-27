@@ -11,7 +11,7 @@ const getopts = require('getopts');
 const RssParser = require('rss-parser');
 const rssParser = new RssParser();
 
-const commands = ['add', 'diagnostic', 'help', 'list', 'mark', 'pull', 'refresh', 'stage'];
+const commands = ['add', 'diagnostic', 'help', 'list', 'mark', 'pull', 'push', 'refresh', 'stage'];
 
 const GREEN_CHECKMARK = '\x1b[32m\u2713\x1b[0m';
 const GREEN_PLUS = '\x1b[32m+\x1b[0m';
@@ -52,6 +52,9 @@ else if (command == 'mark') {
 }
 else if (command == 'pull') {
 	pullCommand(getopts(cliOptions._.slice(1), { default: { db: 'podcasts.json' } }));
+}
+else if (command == 'push') {
+	pushCommand(getopts(cliOptions._.slice(1), { default: { db: 'podcasts.json' } }));
 }
 else if (command == 'refresh') {
 	refreshCommand(getopts(cliOptions._.slice(1), { default: { db: 'podcasts.json' } }));
@@ -144,6 +147,7 @@ function helpCommand(cliOptions, exitCode) {
 		console.log('  list     Show high-level podcast information');
 		console.log('  mark     Mark episodes as listened or unlistened');
 		console.log('  pull     Fetch and merge play data from the iPod Shuffle');
+		console.log('  push     Copy podcasts and control files to the iPod Shuffle');
 		console.log('  refresh  Fetch new episode information');
 		console.log('  stage    Select and download episodes');
 	}
@@ -295,6 +299,61 @@ function pullCommand(cliOptions) {
 
 	mergeShuffleDatabase(shuffleDatabase, podcastDatabase);
 	savePodcastDatabase(filename, podcastDatabase);
+
+	process.exit();
+}
+
+function pushCommand(cliOptions) {
+	if (!verifyPushCommandOptions(cliOptions)) {
+		console.error('usage: podshuffler push [options]');
+		process.exit(1);
+	}
+
+	let filename = cliOptions['db'];
+	let podcastDatabase = loadPodcastDatabase(filename);
+
+	Object.freeze(podcastDatabase);
+
+	let source = cliOptions['source'];
+	let destination = cliOptions['destination'];
+
+	if (cliOptions['dry-run']) {
+		source = './sync';
+		destination = './ipod';
+
+		fs.mkdirSync(destination + '/iPod_Control');
+		fs.mkdirSync(destination + '/iPod_Control/iTunes');
+	}
+
+	let shuffleDatabaseFile = fs.readFileSync('./sync/iTunesSD');
+	let shuffleStatsFile = fs.readFileSync('./sync/iTunesStats');
+	let shufflePlayerStateFile = fs.readFileSync('./sync/iTunesPState');
+
+	let shuffleDatabase = new ShuffleDatabase(shuffleDatabaseFile, shuffleStatsFile, shufflePlayerStateFile);
+
+	let ipodFilenames = fs.readdirSync(destination);
+
+	ipodFilenames.forEach(function(ipodFilename) {
+		if (ipodFilename.endsWith('.mp3')) {
+			if (!shuffleDatabase.episodes.find(function(episode) { return episode.filename == '/' + ipodFilename; })) {
+				fs.unlinkSync(destination + '/' + ipodFilename);
+				console.log(ipodFilename, 'no longer needed');
+			}
+		}
+	});
+
+	shuffleDatabase.episodes.forEach(function(episode) {
+		if (ipodFilenames.includes(episode.filename.substring(1))) {
+			return;
+		}
+		else {
+			fs.copyFileSync(source + episode.filename, destination + episode.filename);
+		}
+	});
+
+	fs.copyFileSync(source + '/iTunesSD', destination + '/iPod_Control/iTunes/iTunesSD');
+	fs.copyFileSync(source + '/iTunesStats', destination + '/iPod_Control/iTunes/iTunesStats');
+	fs.copyFileSync(source + '/iTunesPState', destination + '/iPod_Control/iTunes/iTunesPState');
 
 	process.exit();
 }
@@ -501,6 +560,24 @@ function verifyMarkCommandOptions(cliOptions) {
 
 	if (!cliOptions['listened'] && !cliOptions['unlistened'] && !cliOptions['queued'] && !cliOptions['unqueued']) {
 		console.error('You must specify at least one of --listened, --unlistened, --queued, and --unqueued.');
+		return false;
+	}
+
+	return true;
+}
+
+function verifyPushCommandOptions(cliOptions) {
+	if (cliOptions['dry-run'] && (!cliOptions['source'] || !cliOptions['destination'])) {
+		console.error('Just a heads up that this isn\'t really a "dry" run. If you still want to do this use:');
+		console.error('podshuffler push --source=./sync --destination=./ipod --dry-run');
+		return false;
+	}
+
+	if (!cliOptions['source'] || !cliOptions['destination']) {
+		console.error('Both a --source and a --destination must be specified.');
+		console.error('--source will likely be something like "./sync".');
+		console.error('--destination will likely be something like "/media/jpnance/PODOLITH\ II".');
+
 		return false;
 	}
 
