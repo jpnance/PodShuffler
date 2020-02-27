@@ -51,7 +51,7 @@ else if (command == 'refresh') {
 	refreshCommand(getopts(cliOptions._.slice(1), { default: { db: 'podcasts.json' } }));
 }
 else if (command == 'stage') {
-	stageCommand(getopts(cliOptions._.slice(1), { default: { db: 'podcasts.json', download: true } }));
+	stageCommand(getopts(cliOptions._.slice(1), { default: { db: 'podcasts.json', 'dry-run': false } }));
 }
 
 function addCommand(cliOptions) {
@@ -327,16 +327,17 @@ function stageCommand(cliOptions) {
 		}
 
 		let episodeFilename = podcast.shortName + '-' + episode.md5.substring(0, 8) + '.mp3';
-		let episodeFile = fs.createWriteStream('./sync/' + episodeFilename);
 
-		if (episode.url.startsWith('https')) {
-			protocol = https;
-		}
-		else {
-			protocol = http;
-		}
+		if (!cliOptions['dry-run']) {
+			let episodeFile = fs.createWriteStream('./sync/' + episodeFilename);
 
-		if (cliOptions['download']) {
+			if (episode.url.startsWith('https')) {
+				protocol = https;
+			}
+			else {
+				protocol = http;
+			}
+
 			downloadPromises.push(new Promise(function(resolve, reject) {
 				protocol.get(episode.url, function(response) {
 					response.on('data', function(data) {
@@ -345,7 +346,7 @@ function stageCommand(cliOptions) {
 						episodeFile.end();
 						shuffleDatabase.addEpisode(new ShuffleDatabaseEpisode('/' + episodeFilename, episode.bookmarkTime || 0xffffff));
 
-						console.log('\u2713 ' + podcast.name + ': ' + episode.title);
+						console.log('\x1b[32m\u2713\x1b[0m ' + podcast.name + ': ' + episode.title);
 
 						resolve();
 					});
@@ -353,14 +354,15 @@ function stageCommand(cliOptions) {
 			}));
 		}
 		else {
-			episodeFile.end();
-			shuffleDatabase.addEpisode(new ShuffleDatabaseEpisode('/' + episodeFilename, episode.bookmarkTime || 0xffffff));
-
-			console.log('\u2713 ' + podcast.name + ': ' + episode.title);
+			console.log('\x1b[32m\u2713\x1b[0m ' + podcast.name + ': ' + episode.title);
 		}
 	});
 
 	Promise.all(downloadPromises).then(function() {
+		if (cliOptions['dry-run']) {
+			process.exit();
+		}
+
 		let iTunesSDFile;
 		let iTunesStatsFile;
 
