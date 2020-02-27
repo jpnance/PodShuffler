@@ -14,6 +14,7 @@ const rssParser = new RssParser();
 const commands = ['add', 'diagnostic', 'help', 'list', 'mark', 'pull', 'refresh', 'stage'];
 
 const GREEN_CHECKMARK = '\x1b[32m\u2713\x1b[0m';
+const GREEN_PLUS = '\x1b[32m+\x1b[0m';
 
 let cliOptions = getopts(process.argv.slice(2), { stopEarly: true });
 let command = cliOptions._[0];
@@ -420,7 +421,7 @@ function stageCommand(cliOptions) {
 						episodeFile.end();
 						shuffleDatabase.addEpisode(new ShuffleDatabaseEpisode('/' + episodeFilename, episode.bookmarkTime || 0xffffff));
 
-						console.log(GREEN_CHECKMARK + ' ' + podcast.name + ': ' + episode.title);
+						console.log(GREEN_PLUS + ' ' + episode.md5.substring(0, 8) + '  ' + (new Date(episode.date)).toDateString() + '  ' + podcast.name + ': ' + episode.title);
 
 						resolve();
 					});
@@ -428,7 +429,7 @@ function stageCommand(cliOptions) {
 			}));
 		}
 		else {
-			console.log(GREEN_CHECKMARK + ' ' + podcast.name + ': ' + episode.title);
+			console.log(GREEN_PLUS + ' ' + episode.md5.substring(0, 8) + '  ' + (new Date(episode.date)).toDateString() + '  ' + podcast.name + ': ' + episode.title);
 		}
 	});
 
