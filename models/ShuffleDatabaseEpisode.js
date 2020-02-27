@@ -1,7 +1,8 @@
-function ShuffleDatabaseEpisode(filename, bookmarkTime) {
+function ShuffleDatabaseEpisode(filename, bookmarkTime, priority) {
 	this.filename = filename;
 	this.fileType = 'mp3';
 	this.bookmarkTime = bookmarkTime;
+	this.priority = priority;
 
 	for (let i = 0; i < filename.length; i++) {
 		this.filename[(i * 2) + 1] = filename.charCodeAt(i);

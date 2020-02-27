@@ -410,34 +410,44 @@ function stageCommand(cliOptions) {
 
 		let episodeFilename = podcast.shortName + '-' + episode.md5.substring(0, 8) + '.mp3';
 
-		if (!cliOptions['dry-run']) {
-			let episodeFile = fs.createWriteStream('./sync/' + episodeFilename);
-
-			if (episode.url.startsWith('https')) {
-				protocol = https;
-			}
-			else {
-				protocol = http;
-			}
-
-			downloadPromises.push(new Promise(function(resolve, reject) {
-				protocol.get(episode.url, function(response) {
-					response.on('data', function(data) {
-						episodeFile.write(data);
-					}).on('end', function() {
-						episodeFile.end();
-						shuffleDatabase.addEpisode(new ShuffleDatabaseEpisode('/' + episodeFilename, episode.bookmarkTime || 0xffffff));
-
-						console.log(GREEN_PLUS + ' ' + episode.md5.substring(0, 8) + '  ' + (new Date(episode.date)).toDateString() + '  ' + podcast.name + ': ' + episode.title);
-
-						resolve();
-					});
-				});
-			}));
+		if (episode.url.startsWith('https')) {
+			protocol = https;
 		}
 		else {
-			console.log(GREEN_PLUS + ' ' + episode.md5.substring(0, 8) + '  ' + (new Date(episode.date)).toDateString() + '  ' + podcast.name + ': ' + episode.title);
+			protocol = http;
 		}
+
+		downloadPromises.push(new Promise(function(resolve, reject) {
+			let resolutionData = { podcast: podcast, episode: episode };
+
+			if (cliOptions['dry-run']) {
+				resolve(resolutionData);
+				return;
+			}
+
+			try {
+				fs.accessSync('./sync/' + episodeFilename);
+				resolve(resolutionData);
+				return;
+			} catch (error) { }
+
+			let episodeFile = fs.createWriteStream('./sync/' + episodeFilename);
+
+			protocol.get(episode.url, function(response) {
+				response.on('data', function(data) {
+					episodeFile.write(data);
+				}).on('end', function() {
+					episodeFile.end();
+
+					resolve(resolutionData);
+				});
+			});
+		}).then(function(fulfilledData) {
+			let { podcast, episode } = fulfilledData;
+
+			shuffleDatabase.addEpisode(new ShuffleDatabaseEpisode('/' + episodeFilename, episode.bookmarkTime || 0xffffff, podcast.type));
+			console.log(GREEN_PLUS + ' ' + episode.md5.substring(0, 8) + '  ' + (new Date(episode.date)).toDateString() + '  ' + podcast.name + ': ' + episode.title);
+		}));
 	});
 
 	Promise.all(downloadPromises).then(function() {

@@ -76,6 +76,42 @@ function ShuffleDatabase(shuffleDatabaseFile, shuffleStatsFile, shufflePlayerSta
 
 ShuffleDatabase.prototype.addEpisode = function(episode) {
 	this.episodes.push(episode);
+
+	this.episodes.sort(function(a, b) {
+		if (a.priority == 'daily' && b.priority != 'daily') {
+			return -1;
+		}
+		else if (a.priority != 'daily' && b.priority == 'daily') {
+			return 1;
+		}
+		else if (a.priority == 'serial' && b.priority != 'serial') {
+			return -1;
+		}
+		else if (a.priority != 'serial' && b.priority == 'serial') {
+			return 1;
+		}
+		else if (a.priority == 'randomizable' && b.priority != 'randomizable') {
+			return -1;
+		}
+		else if (a.priority != 'randomizable' && b.priority == 'randomizable') {
+			return 1;
+		}
+		else if (a.priority == 'evergreen' && b.priority != 'evergreen') {
+			return -1;
+		}
+		else if (a.priority != 'evergreen' && b.priority == 'evergreen') {
+			return 1;
+		}
+		else if (a.bookmarkTime != 0xffffff && (a.bookmarkTime > b.bookmarkTime || b.bookmarkTime == 0xffffff)) {
+			return -1;
+		}
+		else if (b.bookmarkTime != 0xffffff && (b.bookmarkTime > a.bookmarkTime || a.bookmarkTime == 0xffffff)) {
+			return 1;
+		}
+		else {
+			return (Math.random() > 0.5) ? -1 : 1;
+		}
+	});
 };
 
 ShuffleDatabase.prototype.toItunesPState = function() {
