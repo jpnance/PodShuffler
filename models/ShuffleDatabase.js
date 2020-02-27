@@ -51,7 +51,8 @@ function ShuffleDatabase(shuffleDatabaseFile, shuffleStatsFile, shufflePlayerSta
 				filename: filename,
 				bookmarkTime: bookmarkTime,
 				playCount: playCount,
-				skipCount: skipCount
+				skipCount: skipCount,
+				priority: 0xdeadbeef
 			});
 		}
 
@@ -78,7 +79,10 @@ ShuffleDatabase.prototype.addEpisode = function(episode) {
 	this.episodes.push(episode);
 
 	this.episodes.sort(function(a, b) {
-		if (a.priority == 'daily' && b.priority != 'daily') {
+		if (a.priority == 0xdeadbeef && b.priority == 0xdeadbeef) {
+			return 0;
+		}
+		else if (a.priority == 'daily' && b.priority != 'daily') {
 			return -1;
 		}
 		else if (a.priority != 'daily' && b.priority == 'daily') {
