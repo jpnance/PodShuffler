@@ -171,16 +171,23 @@ function listCommand(cliOptions) {
 		console.log();
 
 		if (cliOptions['podcast']) {
+			let episodes = podcast.episodes;
+
+			if (cliOptions['reverse']) {
+				episodes.reverse();
+			}
+
 			podcast.episodes.forEach(function(episode) {
 				let symbol = ' ';
 				let shortMd5 = episode.md5.substring(0, 8);
+				let date = new Date(episode.date).toDateString();
 				let title = episode.title;
 
 				if (episode.listened) {
 					symbol = GREEN_CHECKMARK;
 				}
 
-				console.log(symbol, shortMd5, title);
+				console.log(symbol, shortMd5, '', date, '', title);
 			});
 		}
 	});
