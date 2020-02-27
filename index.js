@@ -16,7 +16,14 @@ const commands = ['add', 'diagnostic', 'help', 'list', 'pull', 'refresh', 'stage
 let cliOptions = getopts(process.argv.slice(2), { stopEarly: true });
 let command = cliOptions._[0];
 
-if (!command) {
+if (cliOptions['help']) {
+	helpCommand(getopts(cliOptions._.slice(1)));
+}
+else if (cliOptions['version']) {
+	console.log('podshuffler version 1');
+	process.exit();
+}
+else if (!command) {
 	helpCommand({}, 1);
 	process.exit(1);
 }
