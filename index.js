@@ -237,6 +237,13 @@ function markCommand(cliOptions) {
 				else if (cliOptions['unlistened']) {
 					episode.listened = false;
 				}
+
+				if (cliOptions['unqueued']) {
+					episode.queuedUp = false;
+				}
+				else if (cliOptions['queued']) {
+					episode.queuedUp = true;
+				}
 		})
 	});
 
@@ -482,8 +489,8 @@ function verifyMarkCommandOptions(cliOptions) {
 		return false;
 	}
 
-	if (!cliOptions['listened'] && !cliOptions['unlistened']) {
-		console.error('Specify either --listened or --unlistened.');
+	if (!cliOptions['listened'] && !cliOptions['unlistened'] && !cliOptions['queued'] && !cliOptions['unqueued']) {
+		console.error('You must specify at least one of --listened, --unlistened, --queued, and --unqueued.');
 		return false;
 	}
 
