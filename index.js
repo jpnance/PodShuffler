@@ -13,6 +13,8 @@ const rssParser = new RssParser();
 
 const commands = ['add', 'diagnostic', 'help', 'list', 'mark', 'pull', 'refresh', 'stage'];
 
+const GREEN_CHECKMARK = '\x1b[32m\u2713\x1b[0m';
+
 let cliOptions = getopts(process.argv.slice(2), { stopEarly: true });
 let command = cliOptions._[0];
 
@@ -155,6 +157,10 @@ function listCommand(cliOptions) {
 	Object.freeze(podcastDatabase);
 
 	podcastDatabase.forEach(function(podcast) {
+		if (cliOptions['podcast'] && cliOptions['podcast'] != podcast.shortName) {
+			return;
+		}
+
 		let knownEpisodes = podcast.episodes.length;
 		let unlistenedEpisodes = podcast.episodes.filter(function(episode) { return !episode.listened; }).length;
 
@@ -163,6 +169,20 @@ function listCommand(cliOptions) {
 		console.log(knownEpisodes + ' known episodes, ' + unlistenedEpisodes + ' unlistened');
 		console.log(podcast.type);
 		console.log();
+
+		if (cliOptions['podcast']) {
+			podcast.episodes.forEach(function(episode) {
+				let symbol = ' ';
+				let shortMd5 = episode.md5.substring(0, 8);
+				let title = episode.title;
+
+				if (episode.listened) {
+					symbol = GREEN_CHECKMARK;
+				}
+
+				console.log(symbol, shortMd5, title);
+			});
+		}
 	});
 
 	process.exit();
@@ -382,7 +402,7 @@ function stageCommand(cliOptions) {
 						episodeFile.end();
 						shuffleDatabase.addEpisode(new ShuffleDatabaseEpisode('/' + episodeFilename, episode.bookmarkTime || 0xffffff));
 
-						console.log('\x1b[32m\u2713\x1b[0m ' + podcast.name + ': ' + episode.title);
+						console.log(GREEN_CHECKMARK + ' ' + podcast.name + ': ' + episode.title);
 
 						resolve();
 					});
@@ -390,7 +410,7 @@ function stageCommand(cliOptions) {
 			}));
 		}
 		else {
-			console.log('\x1b[32m\u2713\x1b[0m ' + podcast.name + ': ' + episode.title);
+			console.log(GREEN_CHECKMARK + ' ' + podcast.name + ': ' + episode.title);
 		}
 	});
 
