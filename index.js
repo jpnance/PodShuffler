@@ -320,6 +320,7 @@ function refreshPodcast(podcast) {
 				podcast.episodes.push({
 					guid: item.guid,
 					md5: crypto.createHash('md5').update(item.guid).digest('hex'),
+					date: item.pubDate,
 					title: item.title,
 					url: item.enclosure.url,
 					bookmarkTime: 0,
@@ -327,6 +328,16 @@ function refreshPodcast(podcast) {
 					queuedUp: false
 				});
 			}
+			else {
+				existingEpisode.date = item.pubDate;
+			}
+		});
+
+		podcast.episodes.sort(function(a, b) {
+			let aDate = new Date(a.date);
+			let bDate = new Date(b.date);
+
+			return (aDate < bDate) ? 1 : ((aDate > bDate) ? -1 : 0);
 		});
 	});
 }
