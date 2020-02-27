@@ -152,7 +152,7 @@ function listCommand(cliOptions) {
 
 	podcastDatabase.forEach(function(podcast) {
 		let knownEpisodes = podcast.episodes.length;
-		let unlistenedEpisodes = podcast.episodes.map(function(episode) { return !episode.listened; }).length;
+		let unlistenedEpisodes = podcast.episodes.filter(function(episode) { return !episode.listened; }).length;
 
 		console.log(podcast.name, '(' + podcast.shortName + ')');
 		console.log(podcast.feedUrl);
