@@ -11,7 +11,7 @@ const getopts = require('getopts');
 const RssParser = require('rss-parser');
 const rssParser = new RssParser();
 
-const commands = ['add', 'diagnostic', 'help', 'list', 'pull', 'refresh', 'stage'];
+const commands = ['add', 'diagnostic', 'help', 'list', 'mark', 'pull', 'refresh', 'stage'];
 
 let cliOptions = getopts(process.argv.slice(2), { stopEarly: true });
 let command = cliOptions._[0];
@@ -43,6 +43,9 @@ else if (command == 'help') {
 }
 else if (command == 'list') {
 	listCommand(getopts(cliOptions._.slice(1), { default: { db: 'podcasts.json' } }));
+}
+else if (command == 'mark') {
+	markCommand(getopts(cliOptions._.slice(1), { default: { db: 'podcasts.json' } }));
 }
 else if (command == 'pull') {
 	pullCommand(getopts(cliOptions._.slice(1), { default: { db: 'podcasts.json' } }));
@@ -136,6 +139,7 @@ function helpCommand(cliOptions, exitCode) {
 		console.log('  add      Add a new podcast');
 		console.log('  help     Show more information about a command');
 		console.log('  list     Show high-level podcast information');
+		console.log('  mark     Mark episodes as listened or unlistened');
 		console.log('  pull     Fetch and merge play data from the iPod Shuffle');
 		console.log('  refresh  Fetch new episode information');
 		console.log('  stage    Select and download episodes');
@@ -180,6 +184,39 @@ function loadPodcastDatabase(filename) {
 	return JSON.parse(podcastsFile);
 }
 
+function markCommand(cliOptions) {
+	if (!verifyMarkCommandOptions(cliOptions)) {
+		console.error('usage: podshuffler mark [options]');
+		process.exit(1);
+	}
+
+	let filename = cliOptions['db'];
+	let podcastDatabase = loadPodcastDatabase(filename);
+
+	podcastDatabase.forEach(function(podcast) {
+		if (cliOptions['podcast'] && cliOptions['podcast'] != podcast.shortName) {
+			return;
+		}
+
+		podcast.episodes.forEach(function(episode) {
+				if (cliOptions['episode'] && !episode.md5.startsWith(cliOptions['episode'])) {
+					return;
+				}
+
+				if (cliOptions['listened']) {
+					episode.listened = true;
+				}
+				else if (cliOptions['unlistened']) {
+					episode.listened = false;
+				}
+		})
+	});
+
+	savePodcastDatabase(filename, podcastDatabase);
+
+	process.exit(0);
+}
+
 function mergeShuffleDatabase(shuffleDatabase, podcastDatabase) {
 	shuffleDatabase.episodes.forEach(function(shuffleEpisode) {
 		let episodeRegexp = /\/(.*?)-([0123456789abcdef]{8})\.(...)/;
@@ -202,7 +239,6 @@ function mergeShuffleDatabase(shuffleDatabase, podcastDatabase) {
 					episode.queuedUp = false;
 				}
 				else {
-					episode.listened = false;
 					episode.queuedUp = true;
 				}
 			});
@@ -395,6 +431,20 @@ function stageCommand(cliOptions) {
 function verifyAddCommandOptions(cliOptions) {
 	if (cliOptions._.length == 0) {
 		console.error('No feed URL specified.');
+		return false;
+	}
+
+	return true;
+}
+
+function verifyMarkCommandOptions(cliOptions) {
+	if (!cliOptions['podcast'] && !cliOptions['episode'] && !cliOptions['all']) {
+		console.error('Either specify a specific podcast or episode using --podcast or --episode or use --all to mark everything.');
+		return false;
+	}
+
+	if (!cliOptions['listened'] && !cliOptions['unlistened']) {
+		console.error('Specify either --listened or --unlistened.');
 		return false;
 	}
 
