@@ -14,7 +14,7 @@ function ShuffleDatabase(shuffleDatabaseFile, shuffleStatsFile, shufflePlayerSta
 		numberOfEpisodesFromStats += (shuffleStatsFile[2] << 16);
 
 		if (numberOfEpisodesFromDatabase != numberOfEpisodesFromStats) {
-			console.error('no clue how we got here');
+			console.error('iTunesSD and iTunesStats are out of sync. Bailing out before we make things worse.');
 			process.exit(1);
 		}
 
