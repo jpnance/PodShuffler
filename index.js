@@ -70,8 +70,8 @@ function addCommand(cliOptions) {
 		process.exit(1);
 	}
 
-	let filename = cliOptions['db'];
-	let podcastDatabase = loadPodcastDatabase(filename);
+	let dbFilename = cliOptions['db'];
+	let podcastDatabase = loadPodcastDatabase(dbFilename);
 
 	let newPodcast = {
 		name: undefined,
@@ -84,7 +84,7 @@ function addCommand(cliOptions) {
 
 	refreshPodcast(newPodcast).then(function() {
 		addPodcast(podcastDatabase, newPodcast);
-		savePodcastDatabase(filename, podcastDatabase);
+		savePodcastDatabase(dbFilename, podcastDatabase);
 
 		newPodcast.episodes = newPodcast.episodes.length + ' episodes';
 		console.log(newPodcast);
@@ -114,8 +114,8 @@ function addPodcast(podcastDatabase, podcast) {
 }
 
 function diagnosticCommand(cliOptions) {
-	let filename = cliOptions['db'];
-	let podcastDatabase = loadPodcastDatabase(filename);
+	let dbFilename = cliOptions['db'];
+	let podcastDatabase = loadPodcastDatabase(dbFilename);
 
 	Object.freeze(podcastDatabase);
 
@@ -157,8 +157,8 @@ function helpCommand(cliOptions, exitCode) {
 }
 
 function listCommand(cliOptions) {
-	let filename = cliOptions['db'];
-	let podcastDatabase = loadPodcastDatabase(filename);
+	let dbFilename = cliOptions['db'];
+	let podcastDatabase = loadPodcastDatabase(dbFilename);
 
 	Object.freeze(podcastDatabase);
 
@@ -201,18 +201,18 @@ function listCommand(cliOptions) {
 	process.exit();
 }
 
-function loadPodcastDatabase(filename) {
+function loadPodcastDatabase(dbFilename) {
 	let podcastsFile;
 
-	filename = filename || 'podcasts.json';
+	dbFilename = dbFilename || 'podcasts.json';
 
 	try {
-		fs.accessSync(path.resolve(filename), fs.constants.R_OK);
+		fs.accessSync(path.resolve(dbFilename), fs.constants.R_OK);
 	} catch (error) {
-		fs.writeFileSync(path.resolve(filename), JSON.stringify([]));
+		fs.writeFileSync(path.resolve(dbFilename), JSON.stringify([]));
 	}
 
-	podcastsFile = fs.readFileSync(path.resolve(filename));
+	podcastsFile = fs.readFileSync(path.resolve(dbFilename));
 
 	return JSON.parse(podcastsFile);
 }
@@ -223,8 +223,8 @@ function markCommand(cliOptions) {
 		process.exit(1);
 	}
 
-	let filename = cliOptions['db'];
-	let podcastDatabase = loadPodcastDatabase(filename);
+	let dbFilename = cliOptions['db'];
+	let podcastDatabase = loadPodcastDatabase(dbFilename);
 
 	podcastDatabase.forEach(function(podcast) {
 		if (cliOptions['podcast'] && cliOptions['podcast'] != podcast.shortName) {
@@ -252,7 +252,7 @@ function markCommand(cliOptions) {
 		})
 	});
 
-	savePodcastDatabase(filename, podcastDatabase);
+	savePodcastDatabase(dbFilename, podcastDatabase);
 
 	process.exit(0);
 }
@@ -292,8 +292,8 @@ function pullCommand(cliOptions) {
 		process.exit(1);
 	}
 
-	let filename = cliOptions['db'];
-	let podcastDatabase = loadPodcastDatabase(filename);
+	let dbFilename = cliOptions['db'];
+	let podcastDatabase = loadPodcastDatabase(dbFilename);
 
 	let source = cliOptions['source'] || '.';
 
@@ -304,7 +304,7 @@ function pullCommand(cliOptions) {
 	let shuffleDatabase = new ShuffleDatabase(shuffleDatabaseFile, shuffleStatsFile, shufflePlayerStateFile);
 
 	mergeShuffleDatabase(shuffleDatabase, podcastDatabase);
-	savePodcastDatabase(filename, podcastDatabase);
+	savePodcastDatabase(dbFilename, podcastDatabase);
 
 	process.exit();
 }
@@ -315,8 +315,8 @@ function pushCommand(cliOptions) {
 		process.exit(1);
 	}
 
-	let filename = cliOptions['db'];
-	let podcastDatabase = loadPodcastDatabase(filename);
+	let dbFilename = cliOptions['db'];
+	let podcastDatabase = loadPodcastDatabase(dbFilename);
 
 	Object.freeze(podcastDatabase);
 
@@ -365,8 +365,8 @@ function pushCommand(cliOptions) {
 }
 
 function refreshCommand(cliOptions) {
-	let filename = cliOptions['db'];
-	let podcastDatabase = loadPodcastDatabase(filename);
+	let dbFilename = cliOptions['db'];
+	let podcastDatabase = loadPodcastDatabase(dbFilename);
 
 	let refreshPodcastPromises = [];
 
@@ -375,7 +375,7 @@ function refreshCommand(cliOptions) {
 	});
 
 	Promise.all(refreshPodcastPromises).then(function() {
-		savePodcastDatabase(filename, podcastDatabase);
+		savePodcastDatabase(dbFilename, podcastDatabase);
 		process.exit();
 	}).catch(function(error) {
 		console.error(error);
@@ -422,13 +422,13 @@ function refreshPodcast(podcast) {
 	});
 }
 
-function savePodcastDatabase(filename, podcastDatabase) {
-	fs.writeFileSync(path.resolve(filename), JSON.stringify(podcastDatabase));
+function savePodcastDatabase(dbFilename, podcastDatabase) {
+	fs.writeFileSync(path.resolve(dbFilename), JSON.stringify(podcastDatabase));
 }
 
 function stageCommand(cliOptions) {
-	let filename = cliOptions['db'];
-	let podcastDatabase = loadPodcastDatabase(filename);
+	let dbFilename = cliOptions['db'];
+	let podcastDatabase = loadPodcastDatabase(dbFilename);
 
 	let downloadPromises = [];
 	let shuffleDatabase = new ShuffleDatabase();
@@ -543,7 +543,7 @@ function stageCommand(cliOptions) {
 		fs.writeFileSync(path.resolve('./sync/', 'iTunesStats'), shuffleDatabase.toItunesStats(), { encoding: 'utf8' });
 		fs.writeFileSync(path.resolve('./sync/', 'iTunesPState'), shuffleDatabase.toItunesPState(), { encoding: 'utf8' });
 
-		savePodcastDatabase(filename, podcastDatabase);
+		savePodcastDatabase(dbFilename, podcastDatabase);
 
 		process.exit();
 	});
