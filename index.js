@@ -272,7 +272,8 @@ function mergeShuffleDatabase(shuffleDatabase, podcastDatabase) {
 					return;
 				}
 
-				episode.bookmarkTime = shuffleEpisode.bookmarkTime;
+				// if we haven't listened to more than 65.536 seconds of a podcast, let's just say we haven't listened to any of it
+				episode.bookmarkTime = (shuffleEpisode.bookmarkTime > 0x100) ? shuffleEpisode.bookmarkTime : 0xffffff;
 
 				if (shuffleEpisode.playCount > 0) {
 					episode.listened = true;
