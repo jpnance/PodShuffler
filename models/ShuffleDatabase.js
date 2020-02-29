@@ -77,7 +77,9 @@ function ShuffleDatabase(shuffleDatabaseFile, shuffleStatsFile, shufflePlayerSta
 
 ShuffleDatabase.prototype.addEpisode = function(episode) {
 	this.episodes.push(episode);
+};
 
+ShuffleDatabase.prototype.sortEpisodes = function() {
 	this.episodes.sort(function(a, b) {
 		if (a.priority == 0xdeadbeef && b.priority == 0xdeadbeef) {
 			return 0;

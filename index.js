@@ -516,6 +516,8 @@ function stageCommand(cliOptions) {
 	});
 
 	Promise.all(downloadPromises).then(function() {
+		shuffleDatabase.sortEpisodes();
+
 		if (cliOptions['dry-run']) {
 			process.exit();
 		}
