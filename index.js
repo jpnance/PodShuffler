@@ -421,7 +421,10 @@ function refreshCommand(cliOptions) {
 	});
 
 	Promise.all(refreshPodcastPromises).then(function() {
-		savePodcastDatabase(dbFilename, podcastDatabase);
+		if (!cliOptions['dry-run']) {
+			savePodcastDatabase(dbFilename, podcastDatabase);
+		}
+
 		process.exit();
 	}).catch(function(error) {
 		console.error(error);
@@ -443,7 +446,7 @@ function refreshPodcast(podcast) {
 			});
 
 			if (!existingEpisode) {
-				podcast.episodes.push({
+				let newEpisode = {
 					guid: item.guid,
 					md5: crypto.createHash('md5').update(item.guid).digest('hex'),
 					date: item.pubDate,
@@ -452,7 +455,11 @@ function refreshPodcast(podcast) {
 					bookmarkTime: 0,
 					listened: false,
 					queuedUp: false
-				});
+				};
+
+				podcast.episodes.push(newEpisode);
+
+				console.log(GREEN_PLUS + ' ' + newEpisode.md5.substring(0, 8) + '  ' + (new Date(newEpisode.date)).toDateString() + '  ' + podcast.name + ': ' + newEpisode.title);
 			}
 			else {
 				existingEpisode.date = item.pubDate;
