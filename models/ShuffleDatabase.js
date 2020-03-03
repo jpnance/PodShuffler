@@ -90,6 +90,12 @@ ShuffleDatabase.prototype.sortEpisodes = function() {
 		else if (a.priority != 'daily' && b.priority == 'daily') {
 			return 1;
 		}
+		else if (a.bookmarkTime != 0xffffff && (a.bookmarkTime > b.bookmarkTime || b.bookmarkTime == 0xffffff)) {
+			return -1;
+		}
+		else if (b.bookmarkTime != 0xffffff && (b.bookmarkTime > a.bookmarkTime || a.bookmarkTime == 0xffffff)) {
+			return 1;
+		}
 		else if (a.priority == 'serial' && b.priority != 'serial') {
 			return -1;
 		}
@@ -106,12 +112,6 @@ ShuffleDatabase.prototype.sortEpisodes = function() {
 			return -1;
 		}
 		else if (a.priority != 'evergreen' && b.priority == 'evergreen') {
-			return 1;
-		}
-		else if (a.bookmarkTime != 0xffffff && (a.bookmarkTime > b.bookmarkTime || b.bookmarkTime == 0xffffff)) {
-			return -1;
-		}
-		else if (b.bookmarkTime != 0xffffff && (b.bookmarkTime > a.bookmarkTime || a.bookmarkTime == 0xffffff)) {
 			return 1;
 		}
 		else {
