@@ -12,10 +12,11 @@ const getopts = require('getopts');
 const RssParser = require('rss-parser');
 const rssParser = new RssParser();
 
-const commands = ['add', 'diagnostic', 'help', 'list', 'mark', 'pull', 'push', 'refresh', 'stage'];
+const commands = ['add', 'clean', 'diagnostic', 'help', 'list', 'mark', 'pull', 'push', 'refresh', 'stage'];
 
 const GREEN_CHECKMARK = '\x1b[32m\u2713\x1b[0m';
 const GREEN_PLUS = '\x1b[32m+\x1b[0m';
+const RED_DASH = '\x1b[31m-\x1b[0m';
 
 let cliOptions = getopts(process.argv.slice(2), { stopEarly: true });
 let command = cliOptions._[0];
@@ -38,6 +39,9 @@ else if (!commands.includes(command)) {
 
 if (command == 'add') {
 	addCommand(getopts(cliOptions._.slice(1), { default: { db: 'podcasts.json' } }));
+}
+else if (command == 'clean') {
+	cleanCommand(getopts(cliOptions._.slice(1)));
 }
 else if (command == 'diagnostic') {
 	diagnosticCommand(getopts(cliOptions._.slice(1), { default: { db: 'podcasts.json' } }));
@@ -112,6 +116,47 @@ function addPodcast(podcastDatabase, podcast) {
 
 	podcastDatabase.push(podcast);
 }
+
+function cleanCommand(cliOptions) {
+	if (!verifyCleanCommandOptions(cliOptions)) {
+		console.error('usage: podshuffler clean [options]');
+		process.exit(1);
+	}
+
+	let source = cliOptions['source'];
+
+	let shuffleDatabaseFile = fs.readFileSync(path.resolve(source, 'iTunesSD'));
+	let shuffleStatsFile = fs.readFileSync(path.resolve(source, 'iTunesStats'));
+	let shufflePlayerStateFile = fs.readFileSync(path.resolve(source, 'iTunesPState'));
+
+	let shuffleDatabase = new ShuffleDatabase(shuffleDatabaseFile, shuffleStatsFile, shufflePlayerStateFile);
+
+	let stagedFilenames = fs.readdirSync(path.resolve(source));
+
+	let savedSpace = 0;
+
+	stagedFilenames.forEach(function(stagedFilename) {
+		if (!stagedFilename.endsWith('.mp3')) {
+			return;
+		}
+
+		let requiredEpisode = shuffleDatabase.episodes.find(function(episode) { return episode.filename == '/' + stagedFilename; });
+
+		if (!requiredEpisode) {
+			let fileStats = fs.statSync(path.resolve(source, stagedFilename));
+			let fileSize = Math.round(fileStats.size / (1024 * 1024));
+
+			console.log(RED_DASH, stagedFilename, '(' + fileSize + 'M)');
+			savedSpace += fileSize;
+
+			if (!cliOptions['dry-run']) {
+				fs.unlinkSync(path.resolve(source, stagedFilename));
+			}
+		}
+	});
+
+	process.exit();
+};
 
 function diagnosticCommand(cliOptions) {
 	let dbFilename = cliOptions['db'];
@@ -555,6 +600,16 @@ function stageCommand(cliOptions) {
 function verifyAddCommandOptions(cliOptions) {
 	if (cliOptions._.length == 0) {
 		console.error('No feed URL specified.');
+		return false;
+	}
+
+	return true;
+}
+
+function verifyCleanCommandOptions(cliOptions) {
+	if (!cliOptions['source']) {
+		console.error('You must specify --source, which is the directory in which you stage pushes.');
+		console.error('--source will likely be something like "./sync".');
 		return false;
 	}
 
