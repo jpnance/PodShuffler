@@ -504,7 +504,7 @@ function stageCommand(cliOptions) {
 					return;
 				}
 			}
-			else if (podcast.type == 'serial') {
+			else if (podcast.type == 'timely' || podcast.type == 'serial') {
 				for (let i = podcast.episodes.length - 1; i >= 0; i--) {
 					if (!podcast.episodes[i].listened) {
 						episode = podcast.episodes[i];

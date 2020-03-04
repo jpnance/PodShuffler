@@ -96,6 +96,12 @@ ShuffleDatabase.prototype.sortEpisodes = function() {
 		else if (b.bookmarkTime != 0xffffff && (b.bookmarkTime > a.bookmarkTime || a.bookmarkTime == 0xffffff)) {
 			return 1;
 		}
+		else if (a.priority == 'timely' && b.priority != 'timely') {
+			return -1;
+		}
+		else if (a.priority != 'timely' && b.priority == 'timely') {
+			return 1;
+		}
 		else if (a.priority == 'serial' && b.priority != 'serial') {
 			return -1;
 		}
