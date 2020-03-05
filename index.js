@@ -12,7 +12,7 @@ const getopts = require('getopts');
 const RssParser = require('rss-parser');
 const rssParser = new RssParser();
 
-const commands = ['add', 'clean', 'diagnostic', 'help', 'list', 'mark', 'pull', 'push', 'refresh', 'stage'];
+const commands = ['add', 'clean', 'diagnostic', 'help', 'list', 'mark', 'pull', 'push', 'refresh', 'remove', 'stage'];
 
 const GREEN_CHECKMARK = '\x1b[32m\u2713\x1b[0m';
 const GREEN_PLUS = '\x1b[32m+\x1b[0m';
@@ -63,6 +63,9 @@ else if (command == 'push') {
 }
 else if (command == 'refresh') {
 	refreshCommand(getopts(cliOptions._.slice(1), { default: { db: 'podcasts.json' } }));
+}
+else if (command == 'remove') {
+	removeCommand(getopts(cliOptions._.slice(1), { default: { db: 'podcasts.json' } }));
 }
 else if (command == 'stage') {
 	stageCommand(getopts(cliOptions._.slice(1), { default: { db: 'podcasts.json', 'dry-run': false } }));
@@ -195,6 +198,7 @@ function helpCommand(cliOptions, exitCode) {
 		console.log('  pull     Fetch and merge play data from the iPod Shuffle');
 		console.log('  push     Copy podcasts and control files to the iPod Shuffle');
 		console.log('  refresh  Fetch new episode information');
+		console.log('  remove   Remove an existing podcast');
 		console.log('  stage    Select and download episodes');
 	}
 
@@ -475,6 +479,29 @@ function refreshPodcast(podcast) {
 	});
 }
 
+function removeCommand(cliOptions) {
+	if (!verifyRemoveCommandOptions(cliOptions)) {
+		console.error('usage: podshuffler remove [options] <podcast short name>');
+		process.exit(1);
+	}
+
+	let dbFilename = cliOptions['db'];
+	let podcastDatabase = loadPodcastDatabase(dbFilename);
+	let newPodcastDatabase = [];
+
+	Object.freeze(podcastDatabase);
+
+	podcastDatabase.forEach(function(podcast) {
+		if (podcast.shortName != cliOptions._[0]) {
+			newPodcastDatabase.push(podcast);
+		}
+	});
+
+	savePodcastDatabase(dbFilename, newPodcastDatabase);
+
+	process.exit(0);
+}
+
 function savePodcastDatabase(dbFilename, podcastDatabase) {
 	fs.writeFileSync(path.resolve(dbFilename), JSON.stringify(podcastDatabase));
 }
@@ -660,6 +687,15 @@ function verifyPushCommandOptions(cliOptions) {
 		console.error('--source will likely be something like "./sync".');
 		console.error('--destination will likely be something like "/media/jpnance/PODOLITH\ II".');
 
+		return false;
+	}
+
+	return true;
+}
+
+function verifyRemoveCommandOptions(cliOptions) {
+	if (cliOptions._.length == 0) {
+		console.error('No podcast short name specified.');
 		return false;
 	}
 
