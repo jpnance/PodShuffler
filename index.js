@@ -326,6 +326,7 @@ function helpCommand(cliOptions, exitCode) {
 		console.log('        * "random" means that a random unlistened episode will be selected. This');
 		console.log('          is good for podcasts that you don\'t consider to be either timely or');
 		console.log('          serialized: music, etc.');
+		console.log('    If not specified, the default episode order will be "newest-first".');
 	}
 
 	process.exit(exitCode || 0);
