@@ -300,7 +300,6 @@ function listCommand(cliOptions) {
 		console.log(knownEpisodes + ' known episodes, ' + unlistenedEpisodes + ' unlistened');
 		console.log('Playlist priority:', podcast.playlistPriority);
 		console.log('Episode order:', podcast.episodeOrder);
-		console.log
 		console.log();
 
 		if (cliOptions['podcast']) {
