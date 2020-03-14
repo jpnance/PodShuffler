@@ -41,7 +41,7 @@ if (command == 'add') {
 	addCommand(getopts(cliOptions._.slice(1), { default: { db: 'podcasts.json' } }));
 }
 else if (command == 'backfill') {
-	backfillCommand(getopts(cliOptions._.slice(1)));
+	backfillCommand(getopts(cliOptions._.slice(1), { default: { db: 'podcasts.json' } }));
 }
 else if (command == 'clean') {
 	cleanCommand(getopts(cliOptions._.slice(1)));
