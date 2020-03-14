@@ -158,6 +158,8 @@ function cleanCommand(cliOptions) {
 		}
 	});
 
+	console.log('Total cleanuppable disk space:', savedSpace + 'M');
+
 	process.exit();
 };
 
