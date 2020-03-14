@@ -12,7 +12,7 @@ const getopts = require('getopts');
 const RssParser = require('rss-parser');
 const rssParser = new RssParser();
 
-const commands = ['add', 'clean', 'diagnostic', 'help', 'list', 'mark', 'pull', 'push', 'refresh', 'remove', 'stage'];
+const commands = ['add', 'backfill', 'clean', 'diagnostic', 'edit', 'help', 'list', 'mark', 'pull', 'push', 'refresh', 'remove', 'stage'];
 
 const GREEN_CHECKMARK = '\x1b[32m\u2713\x1b[0m';
 const GREEN_PLUS = '\x1b[32m+\x1b[0m';
@@ -40,11 +40,17 @@ else if (!commands.includes(command)) {
 if (command == 'add') {
 	addCommand(getopts(cliOptions._.slice(1), { default: { db: 'podcasts.json' } }));
 }
+else if (command == 'backfill') {
+	backfillCommand(getopts(cliOptions._.slice(1)));
+}
 else if (command == 'clean') {
 	cleanCommand(getopts(cliOptions._.slice(1)));
 }
 else if (command == 'diagnostic') {
 	diagnosticCommand(getopts(cliOptions._.slice(1), { default: { db: 'podcasts.json' } }));
+}
+else if (command == 'edit') {
+	editCommand(getopts(cliOptions._.slice(1), { default: { db: 'podcasts.json' } }));
 }
 else if (command == 'help') {
 	helpCommand(getopts(cliOptions._.slice(1)));
@@ -120,6 +126,40 @@ function addPodcast(podcastDatabase, podcast) {
 	podcastDatabase.push(podcast);
 }
 
+function backfillCommand(cliOptions) {
+	let dbFilename = cliOptions['db'];
+	let podcastDatabase = loadPodcastDatabase(dbFilename);
+
+	podcastDatabase.forEach(function(podcast) {
+		if (podcast.type == 'daily') {
+			podcast.playlistPriority = 1;
+			podcast.episodeOrder = 'newest-only';
+		}
+		else if (podcast.type == 'timely') {
+			podcast.playlistPriority = 2;
+			podcast.episodeOrder = 'oldest-first';
+		}
+		else if (podcast.type == 'serial') {
+			podcast.playlistPriority = 3;
+			podcast.episodeOrder = 'oldest-first';
+		}
+		else if (podcast.type == 'randomizable') {
+			podcast.playlistPriority = 3;
+			podcast.episodeOrder = 'random';
+		}
+		else if (podcast.type == 'evergreen') {
+			podcast.playlistPriority = 4;
+			podcast.episodeOrder = 'random';
+		}
+
+		delete podcast.type;
+	});
+
+	savePodcastDatabase(dbFilename, podcastDatabase);
+
+	process.exit();
+}
+
 function cleanCommand(cliOptions) {
 	if (!verifyCleanCommandOptions(cliOptions)) {
 		console.error('usage: podshuffler clean [options]');
@@ -188,6 +228,38 @@ function diagnosticCommand(cliOptions) {
 	process.exit();
 }
 
+function editCommand(cliOptions) {
+	if (!verifyEditCommandOptions(cliOptions)) {
+		console.error('usage: podshuffler edit [options] <podcast short name>');
+		process.exit(1);
+	}
+
+	let dbFilename = cliOptions['db'];
+	let podcastDatabase = loadPodcastDatabase(dbFilename);
+
+	podcastDatabase.forEach(function(podcast) {
+		if (podcast.shortName != cliOptions._[0]) {
+			return;
+		}
+
+		if (cliOptions['feed-url']) {
+			podcast.feedUrl = cliOptions['feed-url'];
+		}
+
+		if (cliOptions['playlist-priority']) {
+			podcast.playlistPriority = cliOptions['playlist-priority'];
+		}
+
+		if (cliOptions['episode-order']) {
+			podcast.episodeOrder = cliOptions['episode-order'];
+		}
+	});
+
+	savePodcastDatabase(dbFilename, podcastDatabase);
+
+	process.exit();
+}
+
 function helpCommand(cliOptions, exitCode) {
 	if (!cliOptions || !cliOptions._ || cliOptions._.length == 0) {
 		console.log('usage: podshuffler <command> [<options>]');
@@ -195,6 +267,7 @@ function helpCommand(cliOptions, exitCode) {
 		console.log('Commands:');
 		console.log('  add      Add a new podcast');
 		console.log('  clean    Remove unneeded podcast files from the staging area');
+		console.log('  edit     Modify the settings of an existing podcast');
 		console.log('  help     Show more information about a command');
 		console.log('  list     Show high-level podcast information');
 		console.log('  mark     Mark episodes as listened or unlistened');
@@ -225,7 +298,9 @@ function listCommand(cliOptions) {
 		console.log(podcast.name, '(' + podcast.shortName + ')');
 		console.log(podcast.feedUrl);
 		console.log(knownEpisodes + ' known episodes, ' + unlistenedEpisodes + ' unlistened');
-		console.log(podcast.type);
+		console.log('Playlist priority:', podcast.playlistPriority);
+		console.log('Episode order:', podcast.episodeOrder);
+		console.log
 		console.log();
 
 		if (cliOptions['podcast']) {
@@ -648,6 +723,19 @@ function verifyCleanCommandOptions(cliOptions) {
 		console.error('You must specify --source, which is the directory in which you stage pushes.');
 		console.error('--source will likely be something like "./sync".');
 		return false;
+	}
+
+	return true;
+}
+
+function verifyEditCommandOptions(cliOptions) {
+	if (cliOptions._.length == 0) {
+		console.error('No podcast short name specified.');
+		return false;
+	}
+
+	if (!cliOptions['feed-url'] && !cliOptions['playlist-priority'] && !cliOptions['episode-order']) {
+		console.error('You must specify at least one of --feed-url, --playlist-priority, or --episode-order.');
 	}
 
 	return true;
