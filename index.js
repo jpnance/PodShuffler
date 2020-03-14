@@ -673,7 +673,7 @@ function stageCommand(cliOptions) {
 		}).then(function(fulfilledData) {
 			let { podcast, episode } = fulfilledData;
 
-			shuffleDatabase.addEpisode(new ShuffleDatabaseEpisode('/' + episodeFilename, episode.bookmarkTime || 0xffffff, (episode.bookmarkTime != 0 && episode.bookmarkTime != 0xffffff) ? 1.5 : podcast.playlistPriority));
+			shuffleDatabase.addEpisode(new ShuffleDatabaseEpisode('/' + episodeFilename, episode.bookmarkTime || 0xffffff, (episode.bookmarkTime != undefined && episode.bookmarkTime != 0 && episode.bookmarkTime != 0xffffff) ? 1.5 : podcast.playlistPriority));
 			console.log(GREEN_PLUS + ' ' + episode.md5.substring(0, 8) + '  ' + (new Date(episode.date)).toDateString() + '  ' + podcast.name + ': ' + episode.title);
 		}));
 	});
