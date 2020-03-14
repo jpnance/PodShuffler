@@ -84,40 +84,10 @@ ShuffleDatabase.prototype.sortEpisodes = function() {
 		if (a.priority == 0xdeadbeef && b.priority == 0xdeadbeef) {
 			return 0;
 		}
-		else if (a.priority == 'daily' && b.priority != 'daily') {
+		else if (a.priority < b.priority) {
 			return -1;
 		}
-		else if (a.priority != 'daily' && b.priority == 'daily') {
-			return 1;
-		}
-		else if (a.bookmarkTime != 0xffffff && (a.bookmarkTime > b.bookmarkTime || b.bookmarkTime == 0xffffff)) {
-			return -1;
-		}
-		else if (b.bookmarkTime != 0xffffff && (b.bookmarkTime > a.bookmarkTime || a.bookmarkTime == 0xffffff)) {
-			return 1;
-		}
-		else if (a.priority == 'timely' && b.priority != 'timely') {
-			return -1;
-		}
-		else if (a.priority != 'timely' && b.priority == 'timely') {
-			return 1;
-		}
-		else if (a.priority == 'serial' && b.priority != 'serial') {
-			return -1;
-		}
-		else if (a.priority != 'serial' && b.priority == 'serial') {
-			return 1;
-		}
-		else if (a.priority == 'randomizable' && b.priority != 'randomizable') {
-			return -1;
-		}
-		else if (a.priority != 'randomizable' && b.priority == 'randomizable') {
-			return 1;
-		}
-		else if (a.priority == 'evergreen' && b.priority != 'evergreen') {
-			return -1;
-		}
-		else if (a.priority != 'evergreen' && b.priority == 'evergreen') {
+		else if (a.priority > b.priority) {
 			return 1;
 		}
 		else {

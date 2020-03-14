@@ -90,7 +90,8 @@ function addCommand(cliOptions) {
 		name: undefined,
 		shortName: cliOptions['short-name'],
 		feedUrl: cliOptions._[0],
-		type: cliOptions['type'] || 'daily',
+		playlistPriority: cliOptions['playlist-priority'] || 0,
+		episodeOrder: cliOptions['episode-order'] || 'newest-first',
 
 		episodes: []
 	};
@@ -601,14 +602,22 @@ function stageCommand(cliOptions) {
 			episode = queuedUpEpisode;
 		}
 		else {
-			if (podcast.type == 'daily') {
+			if (podcast.episodeOrder == 'newest-only') {
 				episode = podcast.episodes[0];
 
 				if (episode.listened) {
 					return;
 				}
 			}
-			else if (podcast.type == 'timely' || podcast.type == 'serial') {
+			else if (podcast.episodeOrder == 'newest-first') {
+				for (let i = 0; i < podcast.episodes.length; i++) {
+					if (!podcast.episodes[i].listened) {
+						episode = podcast.episodes[i];
+						break;
+					}
+				}
+			}
+			else if (podcast.episodeOrder == 'oldest-first') {
 				for (let i = podcast.episodes.length - 1; i >= 0; i--) {
 					if (!podcast.episodes[i].listened) {
 						episode = podcast.episodes[i];
@@ -616,13 +625,10 @@ function stageCommand(cliOptions) {
 					}
 				}
 			}
-			else if (podcast.type == 'randomizable') {
+			else if (podcast.episodeOrder == 'random') {
 				let unlistenedEpisodes = podcast.episodes.filter(function(element) { return !element.listened; });
 
 				episode = unlistenedEpisodes[Math.floor(Math.random() * unlistenedEpisodes.length)];
-			}
-			else if (podcast.type == 'evergreen') {
-				episode = podcast.episodes[Math.floor(Math.random() * podcast.episodes.length)];
 			}
 		}
 
@@ -667,7 +673,7 @@ function stageCommand(cliOptions) {
 		}).then(function(fulfilledData) {
 			let { podcast, episode } = fulfilledData;
 
-			shuffleDatabase.addEpisode(new ShuffleDatabaseEpisode('/' + episodeFilename, episode.bookmarkTime || 0xffffff, podcast.type));
+			shuffleDatabase.addEpisode(new ShuffleDatabaseEpisode('/' + episodeFilename, episode.bookmarkTime || 0xffffff, (episode.bookmarkTime != 0 && episode.bookmarkTime != 0xffffff) ? 1.5 : podcast.playlistPriority));
 			console.log(GREEN_PLUS + ' ' + episode.md5.substring(0, 8) + '  ' + (new Date(episode.date)).toDateString() + '  ' + podcast.name + ': ' + episode.title);
 		}));
 	});
