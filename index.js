@@ -192,6 +192,7 @@ function helpCommand(cliOptions, exitCode) {
 		console.log();
 		console.log('Commands:');
 		console.log('  add      Add a new podcast');
+		console.log('  clean    Remove unneeded podcast files from the staging area');
 		console.log('  help     Show more information about a command');
 		console.log('  list     Show high-level podcast information');
 		console.log('  mark     Mark episodes as listened or unlistened');
