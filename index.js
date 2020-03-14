@@ -38,7 +38,7 @@ else if (!commands.includes(command)) {
 }
 
 if (command == 'add') {
-	addCommand(getopts(cliOptions._.slice(1), { default: { db: 'podcasts.json' } }));
+	addCommand(getopts(cliOptions._.slice(1), { default: { db: 'podcasts.json', 'dry-run': false, 'playlist-priority': 0, 'episode-order': 'newest-first' } }));
 }
 else if (command == 'backfill') {
 	backfillCommand(getopts(cliOptions._.slice(1), { default: { db: 'podcasts.json' } }));
@@ -90,15 +90,18 @@ function addCommand(cliOptions) {
 		name: undefined,
 		shortName: cliOptions['short-name'],
 		feedUrl: cliOptions._[0],
-		playlistPriority: cliOptions['playlist-priority'] || 0,
-		episodeOrder: cliOptions['episode-order'] || 'newest-first',
+		playlistPriority: cliOptions['playlist-priority'],
+		episodeOrder: cliOptions['episode-order'],
 
 		episodes: []
 	};
 
 	refreshPodcast(newPodcast).then(function() {
 		addPodcast(podcastDatabase, newPodcast);
-		savePodcastDatabase(dbFilename, podcastDatabase);
+
+		if (!cliOptions['dry-run']) {
+			savePodcastDatabase(dbFilename, podcastDatabase);
+		}
 
 		newPodcast.episodes = newPodcast.episodes.length + ' episodes';
 		console.log(newPodcast);
@@ -283,7 +286,7 @@ function helpCommand(cliOptions, exitCode) {
 		//           --------------------------------------------------------------------------------
 		console.log('podshuffler add [--db <filename>] [--short-name <short name>]');
 		console.log('                [--playlist-priority <number>]');
-		console.log('                [--episode-order <episode order>] <feed URL>');
+		console.log('                [--episode-order <episode order>] [--dry-run] <feed URL>');
 		console.log();
 		console.log('This command adds a new podcast to your database. The only required field is a');
 		console.log('URL to that podcast\'s RSS feed, starting with either "http://" or "https://".');
@@ -312,7 +315,8 @@ function helpCommand(cliOptions, exitCode) {
 		console.log('--episode-order <episode order>');
 		console.log('    A string representing the order in which you\'d like to listen through the');
 		console.log('    the episodes of this podcast. This can be either "newest-only",');
-		console.log('    "newest-first", "oldest-first", or "random".');
+		console.log('    "newest-first", "oldest-first", or "random". If not specified, the default');
+		console.log('    episode order will be "newest-first".');
 		console.log('        * "newest-only" means that only the most recent episode is eligible for');
 		console.log('           selection, even if there are other unlistened episodes. This is good');
 		console.log('           for podcasts that you consider to be timely and don\'t mind missing');
@@ -326,7 +330,10 @@ function helpCommand(cliOptions, exitCode) {
 		console.log('        * "random" means that a random unlistened episode will be selected. This');
 		console.log('          is good for podcasts that you don\'t consider to be either timely or');
 		console.log('          serialized: music, etc.');
-		console.log('    If not specified, the default episode order will be "newest-first".');
+		console.log();
+		console.log('--dry-run');
+		console.log('    This will execute the add command as specified but not save anything to');
+		console.log('    your database.');
 	}
 
 	process.exit(exitCode || 0);
