@@ -12,5 +12,8 @@
     "follow-redirects": "^1.10.0",
     "getopts": "^2.2.5",
     "rss-parser": "^3.7.5"
+  },
+  "bin": {
+    "podshuffler": "./index.js"
   }
 }
