@@ -1,0 +1,30 @@
+.\" Man page for podshuffler-clean
+.\" Patrick Nance <jpnance@gmail.com>
+.TH PODSHUFFLER-CLEAN 1 "2020-03-14" "1.0" "Podshuffler"
+.SH NAME
+podshuffler-clean \- remove unneeded podcast files from the staging area
+.SH SYNOPSIS
+.B podshuffler clean
+[\fB--stage\fR <path>]
+[\fB--dry-run\fR]
+.SH DESCRIPTION
+This command will remove any unnecessary files (typically MP3s) from the Podshuffler staging area (see \fBpodshuffler-stage\fR(1)) and report how much disk space you saved in so doing.
+.SH OPTIONS
+.PP
+\fB--stage\fR=<path>
+.RS
+A path to a Podshuffler staging area. The staging area is where \fBpodshuffler-stage\fR(1) downloads any podcast episodes it needs and rewrites iTunes-specific files that will later be pushed to your iPod Shuffle with \fBpodshuffler-push\fR(1). If not specified, the default will be \fIstage/\fR in the current directory. Any directory will work as long as the following three files exist within it, in their appropriate iTunes formats:
+.RS
+.IP \(bu 2
+.I iPod_Control/iTunes/iTunesPState
+.IP \(bu
+.I iPod_Control/iTunes/iTunesSD
+.IP \(bu
+.I iPod_Control/iTunes/iTunesStats
+.RE
+.RE
+.PP
+\fB--dry-run\fR
+.RS
+This will execute the clean command as specified but not actually remove any files. This is a good way to see how much disk space you'd free up.
+.RE

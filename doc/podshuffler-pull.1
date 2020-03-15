@@ -1,0 +1,30 @@
+.\" Man page for podshuffler-pull
+.\" Patrick Nance <jpnance@gmail.com>
+.TH PODSHUFFLER-PULL 1 "2020-03-14" "1.0" "Podshuffler"
+.SH NAME
+podshuffler-pull \- fetch and merge your podcast playback data into your database
+.SH SYNOPSIS
+.B podshuffler pull
+[\fB--db\fR <filename>]
+<iPod path>
+.SH DESCRIPTION
+This command fetches your podcast playback data from your iPod Shuffle (mounted at <iPod path>) and merges it into your podcast database. This process will preserve bookmark data so that a podcast you were listening to will pick up right where you left off. For the most part, this command only serves to let \fBpodshuffler-stage\fR(1) know which episodes you've already listened to so it can queue up some new ones for you in the future.
+.SH OPTIONS
+.PP
+\fB--db\fR=<filename>
+.RS
+Use a specific file as your podcast database. If not specified, the default will be podcasts.json in the current directory.
+.RE
+.PP
+<iPod path>
+.RS
+The path to your mounted iPod Shuffle. This will probably be something like \fB/media/username/IPODSHUFFLE\fR. Any directory (e.g. \fB./ipod/\fR) will work as long as the following three files exist within it, in their appropriate iTunes formats:
+.RS
+.IP \(bu 2
+.I iPod_Control/iTunes/iTunesPState
+.IP \(bu
+.I iPod_Control/iTunes/iTunesSD
+.IP \(bu
+.I iPod_Control/iTunes/iTunesStats
+.RE
+.RE

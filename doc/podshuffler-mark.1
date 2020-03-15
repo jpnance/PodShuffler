@@ -1,0 +1,66 @@
+.\" Man page for podshuffler-mark
+.\" Patrick Nance <jpnance@gmail.com>
+.TH PODSHUFFLER-MARK 1 "2020-03-14" "1.0" "Podshuffler"
+.SH NAME
+podshuffler-mark \- modify the state of one or many podcast episodes
+.SH SYNOPSIS
+.B podshuffler mark
+\fB--all\fR
+[\fB--db\fR <filename>]
+[\fB--listened\fR | \fB--unlistened\fR]
+[\fB--queued\fR | \fB--unqueued\fR]
+.br
+.B podshuffler mark
+\fB--podcast\fR <short name> [\fB--db\fR <filename>]
+[\fB--episode\fR <episode ID>]
+[\fB--listened\fR | \fB--unlistened\fR]
+[\fB--queued\fR | \fB--unqueued\fR]
+.br
+.B podshuffler mark
+\fB--episode\fR <episode ID> [\fB--db\fR <filename>]
+[\fB--podcast\fR <short name>]
+[\fB--listened\fR | \fB--unlistened\fR]
+[\fB--queued\fR | \fB--unqueued\fR]
+.SH DESCRIPTION
+This command allows you to mark--individually or in bulk--podcast episodes as listened, unlistened, queued for staging, or unqueued. It's easy to accidentally end up changing a lot of data so at least one of \fB--all\fR, \fB--podcast\fR, and \fB--episode\fR must be specified for anything to happen. Pairing \fB--podcast\fR with \fB--episode\fR is allowed and will speed things up ever so slightly.
+.SH OPTIONS
+.PP
+\fB--db\fR=<filename>
+.RS
+Use a specific file to keep track of all of your podcast data. If not specified, the default will be podcasts.json in the current directory.
+.RE
+.PP
+\fB--all\fR
+.RS
+This flag means that you'll be operating on every episode of every podcast. Be careful with it!
+.RE
+.PP
+\fB--podcast\fR=<short name>
+.RS
+A string matching the short name of the podcast whose episodes you'd like to modify. See \fBpodshuffler-list\fR(1) if you don't know a podcast's short name.
+.RE
+.PP
+\fB--episode\fR=<episode ID>
+.RS
+A string matching the eight-character ID of the episode you'd like to modify. See \fBpodshuffler-list\fR(1) if you don't know an episode's ID.
+.RE
+.PP
+\fB--listened\fR
+.RS
+Mark all operable episodes as "listened", which makes them ineligible to be selected by \fBpodshuffler-stage\fR(1).
+.RE
+.PP
+\fB--unlistened\fR
+.RS
+Mark all operable episodes as "unlistened", which makes them eligible to be selected by \fBpodshuffler-stage\fR(1) whenever they're unqueued.
+.RE
+.PP
+\fB--queued\fR
+.RS
+Mark all operable episodes as "queued", which will try to expedite them in the episode selection process (carried out by \fBpodshuffler-stage\fR(1)). This functionality is not very well supported right now so use it at your own risk. It's not recommended to use this on multiple episodes within the same podcast but it shouldn't break anything.
+.RE
+.PP
+\fB--unqueued\fR
+.RS
+Mark all operable episodes as "unqueued", which makes them eligible to be selected by \fBpodshuffler-stage\fR(1) if they're also unlistened-to.
+.RE

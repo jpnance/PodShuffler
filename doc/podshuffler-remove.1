@@ -1,0 +1,22 @@
+.\" Man page for podshuffler-remove
+.\" Patrick Nance <jpnance@gmail.com>
+.TH PODSHUFFLER-REMOVE 1 "2020-03-14" "1.0" "Podshuffler"
+.SH NAME
+podshuffler-remove \- remove a podcast from your database
+.SH SYNOPSIS
+.B podshuffler remove
+[\fB--db\fR <filename>]
+<short name>
+.SH DESCRIPTION
+This command will entirely remove a podcast from your database, including all episodes and the data associated with them.
+.SH OPTIONS
+.PP
+\fB--db\fR=<filename>
+.RS
+Use a specific file to remove this podcast's data from. If not specified, the default will be podcasts.json in the current directory.
+.RE
+.PP
+<short name>
+.RS
+A string matching the short name of the podcast you'd like to remove. See \fBpodshuffler-list\fR(1) if you don't know a podcast's short name.
+.RE

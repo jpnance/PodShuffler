@@ -1,0 +1,22 @@
+.\" Man page for podshuffler-refresh
+.\" Patrick Nance <jpnance@gmail.com>
+.TH PODSHUFFLER-REFRESH 1 "2020-03-14" "1.0" "Podshuffler"
+.SH NAME
+podshuffler-refresh \- update all of your podcast feeds
+.SH SYNOPSIS
+.B podshuffler refresh
+[\fB--db\fR <filename>]
+[\fB--dry-run\fR]
+.SH DESCRIPTION
+This command goes through each podcast in your database, requests the latest version of its feed URL, and adds the information for any new episodes into your database. It doesn't actually download audio files for those episodes (only \fBpodshuffler-stage\fR(1) does that).
+.SH OPTIONS
+.PP
+\fB--db\fR=<filename>
+.RS
+Use a specific file to for reading and writing podcast data. If not specified, the default will be podcasts.json in the current directory.
+.RE
+.PP
+\fB--dry-run\fR
+.RS
+This will execute the refresh command but not save any new episode information to your database.
+.RE

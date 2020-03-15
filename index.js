@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
@@ -480,7 +482,7 @@ function pullCommand(cliOptions) {
 	let dbFilename = cliOptions['db'];
 	let podcastDatabase = loadPodcastDatabase(dbFilename);
 
-	let source = cliOptions['source'] || '.';
+	let source = cliOptions._[0];
 
 	let shuffleDatabaseFile = fs.readFileSync(path.resolve(source, 'iPod_Control/', 'iTunes/', 'iTunesSD'));
 	let shuffleStatsFile = fs.readFileSync(path.resolve(source, 'iPod_Control/', 'iTunes/', 'iTunesStats'));
@@ -500,34 +502,21 @@ function pushCommand(cliOptions) {
 		process.exit(1);
 	}
 
-	let dbFilename = cliOptions['db'];
-	let podcastDatabase = loadPodcastDatabase(dbFilename);
+	let stage = cliOptions['stage'] || './stage';
+	let ipod = cliOptions._[0];
 
-	Object.freeze(podcastDatabase);
-
-	let source = cliOptions['source'];
-	let destination = cliOptions['destination'];
-
-	if (cliOptions['dry-run']) {
-		source = './sync';
-		destination = './ipod';
-
-		fs.mkdirSync(path.resolve(destination, 'iPod_Control'));
-		fs.mkdirSync(path.resolve(destination, 'iPod_Control', 'iTunes'));
-	}
-
-	let shuffleDatabaseFile = fs.readFileSync(path.resolve(source, 'iTunesSD'));
-	let shuffleStatsFile = fs.readFileSync(path.resolve(source, 'iTunesStats'));
-	let shufflePlayerStateFile = fs.readFileSync(path.resolve(source, 'iTunesPState'));
+	let shuffleDatabaseFile = fs.readFileSync(path.resolve(stage, 'iTunesSD'));
+	let shuffleStatsFile = fs.readFileSync(path.resolve(stage, 'iTunesStats'));
+	let shufflePlayerStateFile = fs.readFileSync(path.resolve(stage, 'iTunesPState'));
 
 	let shuffleDatabase = new ShuffleDatabase(shuffleDatabaseFile, shuffleStatsFile, shufflePlayerStateFile);
 
-	let ipodFilenames = fs.readdirSync(path.resolve(destination));
+	let ipodFilenames = fs.readdirSync(path.resolve(ipod));
 
 	ipodFilenames.forEach(function(ipodFilename) {
 		if (ipodFilename.endsWith('.mp3')) {
 			if (!shuffleDatabase.episodes.find(function(episode) { return episode.filename == '/' + ipodFilename; })) {
-				fs.unlinkSync(path.resolve(destination, ipodFilename));
+				fs.unlinkSync(path.resolve(ipod, ipodFilename));
 				console.log(ipodFilename, 'no longer needed');
 			}
 		}
@@ -538,13 +527,13 @@ function pushCommand(cliOptions) {
 			return;
 		}
 		else {
-			fs.copyFileSync(path.resolve(source, episode.filename.substring(1)), path.resolve(destination, episode.filename.substring(1)));
+			fs.copyFileSync(path.resolve(stage, episode.filename.substring(1)), path.resolve(ipod, episode.filename.substring(1)));
 		}
 	});
 
-	fs.copyFileSync(path.resolve(source, 'iTunesSD'), path.resolve(destination, 'iPod_Control/iTunes/iTunesSD'));
-	fs.copyFileSync(path.resolve(source, 'iTunesStats'), path.resolve(destination, 'iPod_Control/iTunes/iTunesStats'));
-	fs.copyFileSync(path.resolve(source, 'iTunesPState'), path.resolve(destination, 'iPod_Control/iTunes/iTunesPState'));
+	fs.copyFileSync(path.resolve(stage, 'iTunesSD'), path.resolve(ipod, 'iPod_Control/iTunes/iTunesSD'));
+	fs.copyFileSync(path.resolve(stage, 'iTunesStats'), path.resolve(ipod, 'iPod_Control/iTunes/iTunesStats'));
+	fs.copyFileSync(path.resolve(stage, 'iTunesPState'), path.resolve(ipod, 'iPod_Control/iTunes/iTunesPState'));
 
 	process.exit();
 }
@@ -645,6 +634,8 @@ function stageCommand(cliOptions) {
 	let dbFilename = cliOptions['db'];
 	let podcastDatabase = loadPodcastDatabase(dbFilename);
 
+	let stage = cliOptions['stage'] || './stage';
+
 	let downloadPromises = [];
 	let shuffleDatabase = new ShuffleDatabase();
 
@@ -711,12 +702,12 @@ function stageCommand(cliOptions) {
 			}
 
 			try {
-				fs.accessSync(path.resolve('./sync/', episodeFilename));
+				fs.accessSync(path.resolve(stage, episodeFilename));
 				resolve(resolutionData);
 				return;
 			} catch (error) { }
 
-			let episodeFile = fs.createWriteStream('./sync/' + episodeFilename);
+			let episodeFile = fs.createWriteStream(path.resolve(stage, episodeFilename));
 
 			protocol.get(episode.url, function(response) {
 				response.on('data', function(data) {
@@ -746,24 +737,24 @@ function stageCommand(cliOptions) {
 		let iTunesStatsFile;
 
 		try {
-			fs.accessSync(path.resolve('./sync/', 'iTunesSD'), fs.constants.R_OK);
+			fs.accessSync(path.resolve(stage, 'iTunesSD'), fs.constants.R_OK);
 		} catch (error) {
-			fs.writeFileSync(path.resolve('./sync/', 'iTunesSD'));
+			fs.writeFileSync(path.resolve(stage, 'iTunesSD'));
 		}
 
-		iTunesSDFile = fs.readFileSync(path.resolve('./sync/', 'iTunesSD'));
+		iTunesSDFile = fs.readFileSync(path.resolve(stage, 'iTunesSD'));
 
 		try {
-			fs.accessSync(path.resolve('./sync/', 'iTunesStats'), fs.constants.R_OK);
+			fs.accessSync(path.resolve(stage, 'iTunesStats'), fs.constants.R_OK);
 		} catch (error) {
-			fs.writeFileSync(path.resolve('./sync/', 'iTunesStats'));
+			fs.writeFileSync(path.resolve(stage, 'iTunesStats'));
 		}
 
-		iTunesStatsFile = fs.readFileSync(path.resolve('./sync/', 'iTunesStats'));
+		iTunesStatsFile = fs.readFileSync(path.resolve(stage, 'iTunesStats'));
 
-		fs.writeFileSync(path.resolve('./sync/', 'iTunesSD'), shuffleDatabase.toItunesSd(), { encoding: 'utf8' });
-		fs.writeFileSync(path.resolve('./sync/', 'iTunesStats'), shuffleDatabase.toItunesStats(), { encoding: 'utf8' });
-		fs.writeFileSync(path.resolve('./sync/', 'iTunesPState'), shuffleDatabase.toItunesPState(), { encoding: 'utf8' });
+		fs.writeFileSync(path.resolve(stage, 'iTunesSD'), shuffleDatabase.toItunesSd(), { encoding: 'utf8' });
+		fs.writeFileSync(path.resolve(stage, 'iTunesStats'), shuffleDatabase.toItunesStats(), { encoding: 'utf8' });
+		fs.writeFileSync(path.resolve(stage, 'iTunesPState'), shuffleDatabase.toItunesPState(), { encoding: 'utf8' });
 
 		savePodcastDatabase(dbFilename, podcastDatabase);
 
@@ -783,7 +774,7 @@ function verifyAddCommandOptions(cliOptions) {
 function verifyCleanCommandOptions(cliOptions) {
 	if (!cliOptions['source']) {
 		console.error('You must specify --source, which is the directory in which you stage pushes.');
-		console.error('--source will likely be something like "./sync".');
+		console.error('--source will likely be something like "./stage".');
 		return false;
 	}
 
@@ -818,9 +809,8 @@ function verifyMarkCommandOptions(cliOptions) {
 }
 
 function verifyPullCommandOptions(cliOptions) {
-	if (!cliOptions['source']) {
-		console.error('You must specify --source, which is the root-level directory of your iPod Shuffle.');
-		console.error('--source will likely be something like "/media/jpnance/PODOLITH2".');
+	if (cliOptions._.length == 0) {
+		console.error('You must specify a path to the root-level directory of your iPod Shuffle. This is probably something like "/media/username/IPODSHUFFLE".');
 
 		return false;
 	}
@@ -829,16 +819,8 @@ function verifyPullCommandOptions(cliOptions) {
 }
 
 function verifyPushCommandOptions(cliOptions) {
-	if (cliOptions['dry-run'] && (!cliOptions['source'] || !cliOptions['destination'])) {
-		console.error('Just a heads up that this isn\'t really a "dry" run. Files will be copied from --source to --destination. If you still want to do this use:');
-		console.error('podshuffler push --source=./sync --destination=./ipod --dry-run');
-		return false;
-	}
-
-	if (!cliOptions['source'] || !cliOptions['destination']) {
-		console.error('Both a --source and a --destination must be specified.');
-		console.error('--source will likely be something like "./sync".');
-		console.error('--destination will likely be something like "/media/jpnance/PODOLITH\ II".');
+	if (cliOptions._.length == 0) {
+		console.error('No iPod path specified. This will probably be something like "/media/username/IPODSHUFFLE".');
 
 		return false;
 	}

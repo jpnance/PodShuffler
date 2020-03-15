@@ -1,0 +1,64 @@
+.\" Man page for podshuffler-stage
+.\" Patrick Nance <jpnance@gmail.com>
+.TH PODSHUFFLER-STAGE 1 "2020-03-14" "1.0" "Podshuffler"
+.SH NAME
+podshuffler-stage \- get everything ready to be pushed to your iPod Shuffle
+.SH SYNOPSIS
+.B podshuffler stage
+[\fB--db\fR <filename>]
+[\fB--stage\fR <path>]
+[\fB--dry-run\fR]
+.SH DESCRIPTION
+This command, in one fell swoop, decides which podcast episodes to queue up for your next \fBpodshuffler-push\fR(1), downloads them for you, and generates the requisite iTunes files needed for your iPod Shuffle to be able to play them back.
+.PP
+The decision process is grounded with two fundamental rules:
+.RS
+.IP \(bu 2
+Only one (or zero) episodes of a podcast can be queued up at a time.
+.IP \(bu
+A listened-to episode will never be queued up.
+.RE
+.PP
+For each podcast, if \fBpodshuffler-stage\fR(1) sees that an episode is already queued up and unlistened to, it will keep that episode in the queue. If it doesn't, it will select a new episode that depends on that podcast's episode order configuration. There are four possible episode orders:
+.RS
+.IP \(bu 2
+.B newest-first
+means that the most recent unlistened episode will be selected. This is good for podcasts that you consider to be timely but still want to listen to every episode of: sports, tech news, etc.
+.IP \(bu
+.B newest-only
+means that only the most recent episode is eligible for selection, even if there are other unlistened episodes. This is good for podcasts that you consider to be timely and don\'t mind missing an episode of: headlines, song of the day, etc.
+.IP \(bu
+.B oldest-first
+means that the least recent unlistened episode will be selected. This is good for podcasts that you want to listen to in chronological order: history, serials, etc.
+.IP \(bu
+.B random
+means that a random unlistened episode will be selected. This is good for podcasts that you don\'t consider to be either timely or serialized: music, etc.
+.RE
+.PP
+After selecting one (or zero) episodes from each podcast, they'll be downloaded (if they don't already exist in the staging path) and ordered according to that podcast's playlist priority. The lower the priority number, the higher in the playlist a podcast's episode will appear. Episodes with equal priority numbers will be ordered randomly. Any episodes that you were in the middle of listening to will receive a priority of 1.5.
+.PP
+After the playlist is ordered and all of its episodes downloaded, the iTunes-specific files that are needed for iPod Shuffle playback will be generated and placed in the staging path. You can learn more about the formats of these files (iTunesPState, iTunesSD, and iTunesStats) at http://www.ipodlinux.org/ITunesDB/.
+.SH OPTIONS
+.PP
+\fB--db\fR=<filename>
+.RS
+Use a specific file as your podcast database. If not specified, the default will be podcasts.json in the current directory.
+.RE
+.PP
+\fB--stage\fR=<path>
+.RS
+A path to a Podshuffler staging area. This directory will receive any podcast episodes that need to be downloaded and houses the iTunes-specific files that will be generated to support them. If not specified, the default will be \fIstage/\fR in the current directory. Any directory will work as long as the following three files exist within it, in their appropriate iTunes formats:
+.RS
+.IP \(bu 2
+.I iPod_Control/iTunes/iTunesPState
+.IP \(bu
+.I iPod_Control/iTunes/iTunesSD
+.IP \(bu
+.I iPod_Control/iTunes/iTunesStats
+.RE
+.RE
+.PP
+\fB--dry-run\fR
+.RS
+This will execute the stage command but not download any files nor save any data to your database.
+.RE

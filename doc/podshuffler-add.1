@@ -1,0 +1,55 @@
+.\" Man page for podshuffler-add
+.\" Patrick Nance <jpnance@gmail.com>
+.TH PODSHUFFLER-ADD 1 "2020-03-14" "1.0" "Podshuffler"
+.SH NAME
+podshuffler-add \- add a new podcast to your database
+.SH SYNOPSIS
+.B podshuffler add
+[\fB--db\fR <filename>] [\fB--short-name\fR <short name>] [\fB--playlist-priority\fR <number>] [\fB--episode-order\fR <episode order>] [\fB--dry-run\fR] <feed URL>
+.SH DESCRIPTION
+This command adds a new podcast to your database. The only required field is a URL to that podcast\'s RSS feed, starting with either "http://" or "https://".
+.SH OPTIONS
+.PP
+\fB--db\fR=<filename>
+.RS
+Use a specific file to keep track of all of your podcast data. If not specified, the default will be podcasts.json in the current directory.
+.RE
+.PP
+\fB--short-name\fR=<short name>
+.RS
+A short name that will be used both for filenames and so you can more quickly refer to this podcast from the command line. It\'s recommended that you use only lowercase letters and dashes (instead of spaces), for example: "lowe-post", "off-the-hook". If not specified, the default will be set to a lowercase version of the feed URL\'s <title> tag, with spaces converted to dashes. For example, "This Week in Chiptune" becomes "this-week-in-chiptune".
+.RE
+.PP
+\fB--playlist-priority\fR=<number>
+.RS
+A number dictating where in your playlist this podcast\'s episode should appear. Lower numbers will correspond to higher priorities, meaning those episodes will show up first. You can use any number here including integers and floats. If not specified, the default priority will be 0. As such, it\'s not recommended to specify a priority of 0 or lower but those values should still function as expected.
+.RE
+.PP
+\fB--episode-order\fR=<episode order>
+.RS
+A string representing the order in which you\'d like to listen through the the episodes of this podcast. This can be either \fInewest-first\fR, \fInewest-only\fR, \fIoldest-first\fR, or \fIrandom\fR. If not specified, the default episode order will be \fInewest-first\fR.
+.RS
+.IP \(bu 2
+.I newest-first
+means that the most recent unlistened episode will be selected. This is good for podcasts that you consider to be timely but still want to listen to every episode of: sports, tech news, etc.
+.IP \(bu
+.I newest-only
+means that only the most recent episode is eligible for selection, even if there are other unlistened episodes. This is good for podcasts that you consider to be timely and don\'t mind missing an episode of: headlines, song of the day, etc.
+.IP \(bu
+.I oldest-first
+means that the least recent unlistened episode will be selected. This is good for podcasts that you want to listen to in chronological order: history, serials, etc.
+.IP \(bu
+.I random
+means that a random unlistened episode will be selected. This is good for podcasts that you don\'t consider to be either timely or serialized: music, etc.
+.RE
+.RE
+.PP
+\fB--dry-run\fR
+.RS
+This will execute the add command as specified but not save anything to your database.
+.RE
+.PP
+<feed URL>
+.RS
+A URL pointing to an XML/RSS feed. This must start with either "http://" or "https://".
+.RE

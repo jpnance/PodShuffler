@@ -1,0 +1,52 @@
+.\" Man page for podshuffler-edit
+.\" Patrick Nance <jpnance@gmail.com>
+.TH PODSHUFFLER-EDIT 1 "2020-03-14" "1.0" "Podshuffler"
+.SH NAME
+podshuffler-edit \- modify an existing podcast's settings
+.SH SYNOPSIS
+.B podshuffler edit
+[\fB--db\fR <filename>]
+[\fB--feed-url\fR <feed URL>]
+[\fB--playlist-priority\fR <number>]
+[\fB--episode-order\fR <episode order>]
+<short name>
+.SH DESCRIPTION
+This command allows you to change the way Podshuffler will download new episodes for an existing podcast. For example, if a podcast changes its feed URL, you can update it; you may also find yourself interested in making a podcast appear earlier or later on your playlist. Nothing will be done unless one of \fB--feed-url\fR, \fB--playlist-priority\fR, or \fB--episode-order\fR are specified but you're allowed to specify any combination of them.
+.SH OPTIONS
+.PP
+\fB--db\fR=<filename>
+.RS
+Use a specific file to keep track of all of your podcast data. If not specified, the default will be podcasts.json in the current directory.
+.RE
+.PP
+\fB--feed-url\fR=<feed URL>
+.RS
+A URL pointing to an XML/RSS feed. This must start with either "http://" or "https://".
+.RE
+.PP
+\fB--playlist-priority\fR=<number>
+.RS
+A number dictating where in your playlist this podcast\'s episode should appear. Lower numbers will correspond to higher priorities, meaning those episodes will show up first. You can use any number here including integers and floats. If not specified, the default priority will be 0. As such, it\'s not recommended to specify a priority of 0 or lower but those values should still function as expected.
+.RE
+.PP
+\fB--episode-order\fR=<episode order>
+.RS
+A string representing the order in which you\'d like to listen through the the episodes of this podcast. This can be either \fBnewest-first\fR, \fBnewest-only\fR, \fBoldest-first\fR, or \fBrandom\fR. If not specified, the default episode order will be \fBnewest-first\fR.
+.IP \(bu 2
+.B newest-first
+means that the most recent unlistened episode will be selected. This is good for podcasts that you consider to be timely but still want to listen to every episode of: sports, tech news, etc.
+.IP \(bu
+.B newest-only
+means that only the most recent episode is eligible for selection, even if there are other unlistened episodes. This is good for podcasts that you consider to be timely and don\'t mind missing an episode of: headlines, song of the day, etc.
+.IP \(bu
+.B oldest-first
+means that the least recent unlistened episode will be selected. This is good for podcasts that you want to listen to in chronological order: history, serials, etc.
+.IP \(bu
+.B random
+means that a random unlistened episode will be selected. This is good for podcasts that you don\'t consider to be either timely or serialized: music compilations, etc.
+.RE
+.PP
+<short name>
+.RS
+A string matching the short name of the podcast you'd like to edit. See \fBpodshuffler-list\fR(1) if you don't know a podcast's short name.
+.RE
