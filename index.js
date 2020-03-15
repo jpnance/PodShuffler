@@ -170,15 +170,15 @@ function cleanCommand(cliOptions) {
 		process.exit(1);
 	}
 
-	let source = cliOptions['source'];
+	let stage = cliOptions['stage'];
 
-	let shuffleDatabaseFile = fs.readFileSync(path.resolve(source, 'iTunesSD'));
-	let shuffleStatsFile = fs.readFileSync(path.resolve(source, 'iTunesStats'));
-	let shufflePlayerStateFile = fs.readFileSync(path.resolve(source, 'iTunesPState'));
+	let shuffleDatabaseFile = fs.readFileSync(path.resolve(stage, 'iTunesSD'));
+	let shuffleStatsFile = fs.readFileSync(path.resolve(stage, 'iTunesStats'));
+	let shufflePlayerStateFile = fs.readFileSync(path.resolve(stage, 'iTunesPState'));
 
 	let shuffleDatabase = new ShuffleDatabase(shuffleDatabaseFile, shuffleStatsFile, shufflePlayerStateFile);
 
-	let stagedFilenames = fs.readdirSync(path.resolve(source));
+	let stagedFilenames = fs.readdirSync(path.resolve(stage));
 
 	let savedSpace = 0;
 
@@ -190,14 +190,14 @@ function cleanCommand(cliOptions) {
 		let requiredEpisode = shuffleDatabase.episodes.find(function(episode) { return episode.filename == '/' + stagedFilename; });
 
 		if (!requiredEpisode) {
-			let fileStats = fs.statSync(path.resolve(source, stagedFilename));
+			let fileStats = fs.statSync(path.resolve(stage, stagedFilename));
 			let fileSize = Math.round(fileStats.size / (1024 * 1024));
 
 			console.log(RED_DASH, stagedFilename, '(' + fileSize + 'M)');
 			savedSpace += fileSize;
 
 			if (!cliOptions['dry-run']) {
-				fs.unlinkSync(path.resolve(source, stagedFilename));
+				fs.unlinkSync(path.resolve(stage, stagedFilename));
 			}
 		}
 	});
