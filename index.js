@@ -267,6 +267,8 @@ function editCommand(cliOptions) {
 }
 
 function helpCommand(cliOptions, exitCode) {
+	const spawn = require('child_process').spawn;
+
 	if (!cliOptions || !cliOptions._ || cliOptions._.length == 0) {
 		console.log('usage: podshuffler <command> [<options>]');
 		console.log();
@@ -284,61 +286,38 @@ function helpCommand(cliOptions, exitCode) {
 		console.log('  stage    Select and download episodes');
 	}
 	else if (cliOptions._[0] == 'add') {
-		//           80 characters looks like this
-		//           --------------------------------------------------------------------------------
-		console.log('podshuffler add [--db <filename>] [--short-name <short name>]');
-		console.log('                [--playlist-priority <number>]');
-		console.log('                [--episode-order <episode order>] [--dry-run] <feed URL>');
-		console.log();
-		console.log('This command adds a new podcast to your database. The only required field is a');
-		console.log('URL to that podcast\'s RSS feed, starting with either "http://" or "https://".');
-		console.log();
-		console.log('--db <filename>');
-		console.log('    Use a specific file to keep track of all of your podcast data. If not');
-		console.log('    specified, the default will be podcasts.json in the current directory.');
-		console.log();
-		console.log('--short-name <short name>');
-		console.log('    A short name that will be used both for filenames and so you can more');
-		console.log('    quickly refer to this podcast from the command line. It\'s recommended that');
-		console.log('    you use only lowercase letters and dashes (instead of spaces), for example:');
-		console.log('    "lowe-post", "off-the-hook". If not specified, the default will be set to');
-		console.log('    a lowercase version of the feed URL\'s <title> tag, with spaces converted to');
-		console.log('    dashes. For example, "This Week in Chiptune" becomes');
-		console.log('    "this-week-in-chiptune".');
-		console.log();
-		console.log('--playlist-priority <number>');
-		console.log('    A number dictating where in your playlist this podcast\'s episode should');
-		console.log('    appear. Lower numbers will correspond to higher priorities, meaning those');
-		console.log('    episodes will show up first. You can use any number here including integers');
-		console.log('    and floats. If not specified, the default priority will be 0. As such, it\'s');
-		console.log('    not recommended to specify a priority of 0 or lower but those values should');
-		console.log('    still function as expected.');
-		console.log();
-		console.log('--episode-order <episode order>');
-		console.log('    A string representing the order in which you\'d like to listen through the');
-		console.log('    the episodes of this podcast. This can be either "newest-only",');
-		console.log('    "newest-first", "oldest-first", or "random". If not specified, the default');
-		console.log('    episode order will be "newest-first".');
-		console.log('        * "newest-only" means that only the most recent episode is eligible for');
-		console.log('           selection, even if there are other unlistened episodes. This is good');
-		console.log('           for podcasts that you consider to be timely and don\'t mind missing');
-		console.log('           an episode of: headlines, song of the day, etc.');
-		console.log('        * "newest-first" means that the most recent unlistened episode will be');
-		console.log('          selected. This is good for podcasts that you consider to be timely');
-		console.log('          but still want to listen to every episode of: sports, tech news, etc.');
-		console.log('        * "oldest-first" means that the least recent unlistened episode will be');
-		console.log('          selected. This is good for podcasts that you want to listen to in');
-		console.log('          chronological order: history, serials, etc.');
-		console.log('        * "random" means that a random unlistened episode will be selected. This');
-		console.log('          is good for podcasts that you don\'t consider to be either timely or');
-		console.log('          serialized: music, etc.');
-		console.log();
-		console.log('--dry-run');
-		console.log('    This will execute the add command as specified but not save anything to');
-		console.log('    your database.');
+		spawn('man', [ './doc/podshuffler-add.1' ], { stdio: 'inherit' });
 	}
-
-	process.exit(exitCode || 0);
+	else if (cliOptions._[0] == 'clean') {
+		spawn('man', [ './doc/podshuffler-clean.1' ], { stdio: 'inherit' });
+	}
+	else if (cliOptions._[0] == 'edit') {
+		spawn('man', [ './doc/podshuffler-edit.1' ], { stdio: 'inherit' });
+	}
+	else if (cliOptions._[0] == 'help') {
+		spawn('man', [ './doc/podshuffler-help.1' ], { stdio: 'inherit' });
+	}
+	else if (cliOptions._[0] == 'list') {
+		spawn('man', [ './doc/podshuffler-list.1' ], { stdio: 'inherit' });
+	}
+	else if (cliOptions._[0] == 'mark') {
+		spawn('man', [ './doc/podshuffler-mark.1' ], { stdio: 'inherit' });
+	}
+	else if (cliOptions._[0] == 'pull') {
+		spawn('man', [ './doc/podshuffler-pull.1' ], { stdio: 'inherit' });
+	}
+	else if (cliOptions._[0] == 'push') {
+		spawn('man', [ './doc/podshuffler-push.1' ], { stdio: 'inherit' });
+	}
+	else if (cliOptions._[0] == 'refresh') {
+		spawn('man', [ './doc/podshuffler-refresh.1' ], { stdio: 'inherit' });
+	}
+	else if (cliOptions._[0] == 'remove') {
+		spawn('man', [ './doc/podshuffler-remove.1' ], { stdio: 'inherit' });
+	}
+	else if (cliOptions._[0] == 'stage') {
+		spawn('man', [ './doc/podshuffler-stage.1' ], { stdio: 'inherit' });
+	}
 }
 
 function listCommand(cliOptions) {
