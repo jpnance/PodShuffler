@@ -14,11 +14,16 @@ const getopts = require('getopts');
 const RssParser = require('rss-parser');
 const rssParser = new RssParser();
 
-const commands = ['add', 'backfill', 'clean', 'diagnostic', 'edit', 'help', 'list', 'mark', 'pull', 'push', 'refresh', 'remove', 'stage'];
+const commands = ['add', 'backfill', 'clean', 'diagnostic', 'edit', 'help', 'init', 'list', 'mark', 'pull', 'push', 'refresh', 'remove', 'stage'];
 
 const GREEN_CHECKMARK = '\x1b[32m\u2713\x1b[0m';
 const GREEN_PLUS = '\x1b[32m+\x1b[0m';
 const RED_DASH = '\x1b[31m-\x1b[0m';
+
+const DEFAULTS = {
+	dbFilename: path.resolve(process.env.HOME, '.local/share/podshuffler/podcasts.json'),
+	stagePath: path.resolve(process.env.HOME, '.cache/podshuffler')
+}
 
 let cliOptions = getopts(process.argv.slice(2), { stopEarly: true });
 let command = cliOptions._[0];
@@ -40,43 +45,46 @@ else if (!commands.includes(command)) {
 }
 
 if (command == 'add') {
-	addCommand(getopts(cliOptions._.slice(1), { default: { db: 'podcasts.json', 'dry-run': false, 'playlist-priority': 0, 'episode-order': 'newest-first' } }));
+	addCommand(getopts(cliOptions._.slice(1), { default: { db: DEFAULTS.dbFilename, 'dry-run': false, 'playlist-priority': 0, 'episode-order': 'newest-first' } }));
 }
 else if (command == 'backfill') {
-	backfillCommand(getopts(cliOptions._.slice(1), { default: { db: 'podcasts.json' } }));
+	backfillCommand(getopts(cliOptions._.slice(1), { default: { db: DEFAULTS.dbFilename } }));
 }
 else if (command == 'clean') {
-	cleanCommand(getopts(cliOptions._.slice(1)));
+	cleanCommand(getopts(cliOptions._.slice(1), { default: { stage: DEFAULTS.stagePath } }));
 }
 else if (command == 'diagnostic') {
-	diagnosticCommand(getopts(cliOptions._.slice(1), { default: { db: 'podcasts.json' } }));
+	diagnosticCommand(getopts(cliOptions._.slice(1), { default: { db: DEFAULTS.dbFilename } }));
 }
 else if (command == 'edit') {
-	editCommand(getopts(cliOptions._.slice(1), { default: { db: 'podcasts.json' } }));
+	editCommand(getopts(cliOptions._.slice(1), { default: { db: DEFAULTS.dbFilename } }));
 }
 else if (command == 'help') {
 	helpCommand(getopts(cliOptions._.slice(1)));
 }
+else if (command == 'init') {
+	initCommand(getopts(cliOptions._.slice(1), { default: { db: DEFAULTS.dbFilename, stage: DEFAULTS.stagePath } }));
+}
 else if (command == 'list') {
-	listCommand(getopts(cliOptions._.slice(1), { default: { db: 'podcasts.json' } }));
+	listCommand(getopts(cliOptions._.slice(1), { default: { db: DEFAULTS.dbFilename } }));
 }
 else if (command == 'mark') {
-	markCommand(getopts(cliOptions._.slice(1), { default: { db: 'podcasts.json' } }));
+	markCommand(getopts(cliOptions._.slice(1), { default: { db: DEFAULTS.dbFilename } }));
 }
 else if (command == 'pull') {
-	pullCommand(getopts(cliOptions._.slice(1), { default: { db: 'podcasts.json' } }));
+	pullCommand(getopts(cliOptions._.slice(1), { default: { db: DEFAULTS.dbFilename } }));
 }
 else if (command == 'push') {
-	pushCommand(getopts(cliOptions._.slice(1), { default: { db: 'podcasts.json' } }));
+	pushCommand(getopts(cliOptions._.slice(1), { default: { db: DEFAULTS.dbFilename, stage: DEFAULTS.stagePath } }));
 }
 else if (command == 'refresh') {
-	refreshCommand(getopts(cliOptions._.slice(1), { default: { db: 'podcasts.json' } }));
+	refreshCommand(getopts(cliOptions._.slice(1), { default: { db: DEFAULTS.dbFilename } }));
 }
 else if (command == 'remove') {
-	removeCommand(getopts(cliOptions._.slice(1), { default: { db: 'podcasts.json' } }));
+	removeCommand(getopts(cliOptions._.slice(1), { default: { db: DEFAULTS.dbFilename } }));
 }
 else if (command == 'stage') {
-	stageCommand(getopts(cliOptions._.slice(1), { default: { db: 'podcasts.json', 'dry-run': false } }));
+	stageCommand(getopts(cliOptions._.slice(1), { default: { db: DEFAULTS.dbFilename, 'dry-run': false, stage: DEFAULTS.stagePath } }));
 }
 
 function addCommand(cliOptions) {
@@ -167,11 +175,6 @@ function backfillCommand(cliOptions) {
 }
 
 function cleanCommand(cliOptions) {
-	if (!verifyCleanCommandOptions(cliOptions)) {
-		console.error('usage: podshuffler clean [options]');
-		process.exit(1);
-	}
-
 	let stage = cliOptions['stage'];
 
 	let shuffleDatabaseFile = fs.readFileSync(path.resolve(stage, 'iTunesSD'));
@@ -320,6 +323,31 @@ function helpCommand(cliOptions, exitCode) {
 	}
 }
 
+function initCommand() {
+	let dbPath = path.resolve(process.env.HOME, '.local/share/podshuffler');
+	let dbFilename = path.resolve(dbPath, 'podcasts.json');
+
+	let stagePath = path.resolve(process.env.HOME, '.cache/podshuffler');
+
+	try {
+		fs.accessSync(dbPath, fs.constants.R_OK);
+	} catch (error) {
+		fs.mkdirSync(dbPath, 0o700);
+	}
+
+	try {
+		fs.accessSync(dbFilename, fs.constants.R_OK);
+	} catch (error) {
+		fs.writeFileSync(dbFilename, JSON.stringify([]), { mode: 0o600 });
+	}
+
+	try {
+		fs.accessSync(stagePath, fs.constants.R_OK);
+	} catch (error) {
+		fs.mkdirSync(stagePath, 0o700);
+	}
+}
+
 function listCommand(cliOptions) {
 	let dbFilename = cliOptions['db'];
 	let podcastDatabase = loadPodcastDatabase(dbFilename);
@@ -369,7 +397,7 @@ function listCommand(cliOptions) {
 function loadPodcastDatabase(dbFilename) {
 	let podcastsFile;
 
-	dbFilename = dbFilename || 'podcasts.json';
+	dbFilename = dbFilename;
 
 	try {
 		fs.accessSync(path.resolve(dbFilename), fs.constants.R_OK);
@@ -481,7 +509,7 @@ function pushCommand(cliOptions) {
 		process.exit(1);
 	}
 
-	let stage = cliOptions['stage'] || './stage';
+	let stage = cliOptions['stage'];
 	let ipod = cliOptions._[0];
 
 	let shuffleDatabaseFile = fs.readFileSync(path.resolve(stage, 'iTunesSD'));
@@ -613,7 +641,7 @@ function stageCommand(cliOptions) {
 	let dbFilename = cliOptions['db'];
 	let podcastDatabase = loadPodcastDatabase(dbFilename);
 
-	let stage = cliOptions['stage'] || './stage';
+	let stage = cliOptions['stage'];
 
 	let downloadPromises = [];
 	let shuffleDatabase = new ShuffleDatabase();
@@ -744,16 +772,6 @@ function stageCommand(cliOptions) {
 function verifyAddCommandOptions(cliOptions) {
 	if (cliOptions._.length == 0) {
 		console.error('No feed URL specified.');
-		return false;
-	}
-
-	return true;
-}
-
-function verifyCleanCommandOptions(cliOptions) {
-	if (!cliOptions['source']) {
-		console.error('You must specify --source, which is the directory in which you stage pushes.');
-		console.error('--source will likely be something like "./stage".');
 		return false;
 	}
 
