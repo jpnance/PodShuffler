@@ -288,38 +288,8 @@ function helpCommand(cliOptions, exitCode) {
 		console.log('  remove   Remove an existing podcast');
 		console.log('  stage    Select and download episodes');
 	}
-	else if (cliOptions._[0] == 'add') {
-		spawn('man', [ './doc/podshuffler-add.1' ], { stdio: 'inherit' });
-	}
-	else if (cliOptions._[0] == 'clean') {
-		spawn('man', [ './doc/podshuffler-clean.1' ], { stdio: 'inherit' });
-	}
-	else if (cliOptions._[0] == 'edit') {
-		spawn('man', [ './doc/podshuffler-edit.1' ], { stdio: 'inherit' });
-	}
-	else if (cliOptions._[0] == 'help') {
-		spawn('man', [ './doc/podshuffler-help.1' ], { stdio: 'inherit' });
-	}
-	else if (cliOptions._[0] == 'list') {
-		spawn('man', [ './doc/podshuffler-list.1' ], { stdio: 'inherit' });
-	}
-	else if (cliOptions._[0] == 'mark') {
-		spawn('man', [ './doc/podshuffler-mark.1' ], { stdio: 'inherit' });
-	}
-	else if (cliOptions._[0] == 'pull') {
-		spawn('man', [ './doc/podshuffler-pull.1' ], { stdio: 'inherit' });
-	}
-	else if (cliOptions._[0] == 'push') {
-		spawn('man', [ './doc/podshuffler-push.1' ], { stdio: 'inherit' });
-	}
-	else if (cliOptions._[0] == 'refresh') {
-		spawn('man', [ './doc/podshuffler-refresh.1' ], { stdio: 'inherit' });
-	}
-	else if (cliOptions._[0] == 'remove') {
-		spawn('man', [ './doc/podshuffler-remove.1' ], { stdio: 'inherit' });
-	}
-	else if (cliOptions._[0] == 'stage') {
-		spawn('man', [ './doc/podshuffler-stage.1' ], { stdio: 'inherit' });
+	else if (commands.includes(cliOptions._[0])) {
+		spawn('man', [ './doc/podshuffler-' + cliOptions._[0] + '.1' ], { stdio: 'inherit' });
 	}
 }
 

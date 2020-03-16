@@ -15,7 +15,7 @@ Although \fB--dry-run\fR is not available, you can simulate the results of this 
 .PP
 \fB--stage\fR=<path>
 .RS
-A path to a Podshuffler staging area. The staging area is where \fBpodshuffler-stage\fR(1) downloads any podcast episodes it needs and rewrites iTunes-specific files that will later be pushed to your iPod Shuffle with \fBpodshuffler-push\fR(1). If not specified, the default will be \fBstage/\fR in the current directory. Any directory will work as long as the following three files exist within it, in their appropriate iTunes formats:
+A path to a Podshuffler staging area. The staging area is where \fBpodshuffler-stage\fR(1) downloads any podcast episodes it needs and rewrites iTunes-specific files that will later be pushed to your iPod Shuffle with \fBpodshuffler-push\fR(1). If not specified, the default will be \fIstage/\fR in the current directory. Any directory will work as long as the following three files exist within it, in their appropriate iTunes formats:
 .IP \(bu 2
 .I iPod_Control/iTunes/iTunesPState
 .IP \(bu
@@ -26,5 +26,5 @@ A path to a Podshuffler staging area. The staging area is where \fBpodshuffler-s
 .PP
 <iPod path>
 .RS
-The path to your mounted iPod Shuffle. This will probably be something like \fB/media/username/IPODSHUFFLE\fR. Any directory (e.g. \fB./ipod/\fR) will work, if you'd like to do somewhat of a dry-run before copying to your iPod Shuffle.
+The path to your mounted iPod Shuffle. This will probably be something like \fI/media/username/IPODSHUFFLE\fR. Any directory (e.g. \fI./ipod/\fR) will work, if you'd like to do somewhat of a dry-run before copying to your iPod Shuffle.
 .RE

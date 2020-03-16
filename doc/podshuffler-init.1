@@ -1,0 +1,15 @@
+.\" Man page for podshuffler-init
+.\" Patrick Nance <jpnance@gmail.com>
+.TH PODSHUFFLER-INIT 1 "2020-03-14" "1.0" "Podshuffler"
+.SH NAME
+podshuffler-init \- initializes Podshuffler on this system
+.SH SYNOPSIS
+.B podshuffler init
+.SH DESCRIPTION
+This command creates the following files and directories:
+.RS
+.IP \(bu 2
+\fI$HOME/.local/share/podshuffler/podcasts.json\fR, the file that will be used as your default podcast database.
+.IP \(bu
+\fI$HOME/.cache/podshuffler\fR, the directory that will be used as your default staging area.
+.RE
