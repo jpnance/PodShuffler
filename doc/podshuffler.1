@@ -9,7 +9,73 @@ podshuffler \- manage your podcasts and push them to a second-generation iPod Sh
 .B podshuffler
 <command> [<args>]
 .SH DESCRIPTION
-Podshuffler is a command-line program that allows you to manage any number of podcast subscriptions and push the episodes to your second-generation iPod Shuffle.
+Podshuffler is a command-line program that allows you to manage any number of podcast subscriptions and push the episodes to your second-generation iPod Shuffle. It embraces the iPod Shuffle mentality of being customizable but, ultimately, making a lot of decisions for you.
+.PP
+At a high level, Podshuffler wants you to subscribe to a bunch of podcasts and be willing to let it select episodes for you to listen to. You can give it hints about the order in which you want to listen to them but, ultimately, it wants you to just sit back, relax, and listen to your favorite podcasts.
+.PP
+There is, however, a bit of a command-line dance that has to happen. When you first install Podshuffler, you should run:
+.PP
+.RS
+.B podshuffler init
+.RE
+.PP
+This will initialize a new podcast database and staging area for you. Afterwards, you'll be able to subscribe to some podcasts.
+.PP
+Maybe your two favorite podcasts are "Linux Headlines" (a short, daily podcast with the Linux news of the day) and "The Lowe Post" (a longer, roughly weekly podcast about the National Basketball Association). You can add them to your database with the following \fBpodshuffler-add\fR(1) commands:
+.PP
+.RS
+.B podshuffler add https://feeds.fireside.fm/linuxheadlines/rss
+.br
+.B podshuffler add http://www.espn.com/espnradio/feeds/rss/podcast.xml?id=10528553
+.RE
+.PP
+By default, these podcasts will be given short names of "linux-headlines" and "the-lowe-post", respectively. You can use these short names to refer to them more easily when you want to update them. Maybe you only ever care about listening to the latest episode of "Linux Headlines". Using \fBpodshuffler-edit\fR(1) to set its \fB--episode-order\fR to \fBnewest-only\fR will ensure that, even if there are older unlistened episodes, the only "linux-headlines" episode that will ever be queued up for you will be the latest and greatest:
+.PP
+.RS
+.B podshuffler edit --episode-order=newest-only linux-headlines
+.RE
+.PP
+In the case of "The Lowe Post", maybe you feel like you're already up to date on your NBA news but you still want to hear things in chronological order. You'd first use \fBpodshuffler-mark\fR(1) to mark all episodes of that podcast as "listened", then use \fBpodshuffler-edit\fR(1) to change its \fB--episode-order\fR to \fBoldest-first\fR:
+.PP
+.RS
+.B podshuffler mark --podcast=the-lowe-post --listened
+.br
+.B podshuffler edit --episode-order=oldest-first the-lowe-post
+.RE
+.PP
+Finally, you decide that it's most important to you to hear the Linux headlines of the day before you hear anything else. You can use \fBpodshuffler-edit\fR(1) to explicitly set each podcast's \fB--playlist-priority\fR (lower numbers mean higher priorities) so that they appear in specific orders on your iPod Shuffle:
+.PP
+.RS
+.B podshuffler edit --playlist-priority=1 linux-headlines
+.br
+.B podshuffler edit --playlist-priority=2 the-lowe-post
+.RE
+.PP
+Now that things are set up the way you like them, here's the typical chain of commands you'll execute to synchronize your iPod Shuffle playback data with your Podshuffler podcast database. First, you'll use \fBpodshuffler-refresh\fR(1) to make sure Podshuffler is up to date on everything you subscribe to:
+.PP
+.RS
+.B podshuffler refresh
+.RE
+.PP
+Next, you'll use \fBpodshuffler-pull\fR(1) to merge the playback data that's on your iPod Shuffle into your podcast database. If your iPod Shuffle gets mounted at \fI/media/username/IPODSHUFFLE\fR on your computer, you'd use:
+.PP
+.RS
+.B podshuffler pull /media/username/IPODSHUFFLE
+.RE
+.PP
+Then, with everything synced up, you'll use \fBpodshuffler-stage\fR(1) to have Podshuffler select and download an episode from each of your podcast subscriptions as well as generate the files that iPod Shuffle needs in order to play back those episodes:
+.PP
+.RS
+.B podshuffler stage
+.RE
+.PP
+Finally, you'll use \fBpodshuffler-push\fR(1) to actually copy all of the episodes and iPod-specific data to your device:
+.PP
+.RS
+.B podshuffler push /media/username/IPODSHUFFLE
+.RE
+.PP
+That's pretty much all Podshuffler tries to do for you. There are other commands that you can read about but, for the most part, you just subscribe to some podcasts, tell Podshuffler how you want to listen to them, and then let it do the rest. In the future, the refresh/pull/stage/push flow will likely be aliased into one command to make it even simpler.
 .SH OPTIONS
 .PP
 \fB--help\fR
@@ -71,4 +137,15 @@ Remove an existing podcast
 \fBpodshuffler-stage\fR(1)
 .RS
 Select and download episodes
+.RE
+.SH FILES
+.PP
+\fI$HOME/.cache/podshuffler\fR
+.RS
+The directory that will be used as your default staging area.
+.RE
+.PP
+\fI$HOME/.local/share/podshuffler/podcasts.json\fR
+.RS
+The file that will be used as your default podcast database.
 .RE

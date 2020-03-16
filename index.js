@@ -289,7 +289,7 @@ function helpCommand(cliOptions, exitCode) {
 		console.log('  stage    Select and download episodes');
 	}
 	else if (commands.includes(cliOptions._[0])) {
-		spawn('man', [ './doc/podshuffler-' + cliOptions._[0] + '.1' ], { stdio: 'inherit' });
+		spawn('man', [ path.resolve(process.env._, '../../lib/node_modules/podshuffler/doc/podshuffler-' + cliOptions._[0] + '.1') ], { stdio: 'inherit' });
 	}
 }
 
@@ -452,7 +452,7 @@ function mergeShuffleDatabase(shuffleDatabase, podcastDatabase) {
 
 function pullCommand(cliOptions) {
 	if (!verifyPullCommandOptions(cliOptions)) {
-		console.error('usage: podshuffler pull --source <ipod directory> [options]');
+		console.error('usage: podshuffler pull [options] <iPod path>');
 		process.exit(1);
 	}
 
@@ -475,7 +475,7 @@ function pullCommand(cliOptions) {
 
 function pushCommand(cliOptions) {
 	if (!verifyPushCommandOptions(cliOptions)) {
-		console.error('usage: podshuffler push [options]');
+		console.error('usage: podshuffler pull [options] <iPod path>');
 		process.exit(1);
 	}
 
