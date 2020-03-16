@@ -269,6 +269,36 @@ function editCommand(cliOptions) {
 	process.exit();
 }
 
+function formatDuration(duration) {
+	if (!duration) {
+		return '??:??';
+	}
+
+	let hours = Math.floor(duration / 3600);
+	let minutes = Math.floor((duration - (3600 * hours)) / 60);
+	let seconds = duration % 60;
+
+	let formattedDuration = '';
+
+	if (hours > 0) {
+		formattedDuration += hours + ':';
+
+		if (minutes < 10) {
+			formattedDuration += '0';
+		}
+	}
+
+	formattedDuration += minutes + ':';
+
+	if (seconds < 10) {
+		formattedDuration += '0';
+	}
+
+	formattedDuration += seconds;
+
+	return formattedDuration;
+};
+
 function helpCommand(cliOptions, exitCode) {
 	const spawn = require('child_process').spawn;
 
@@ -351,12 +381,13 @@ function listCommand(cliOptions) {
 				let shortMd5 = episode.md5.substring(0, 8);
 				let date = new Date(episode.date).toDateString();
 				let title = episode.title;
+				let duration = episode.duration;
 
 				if (episode.listened) {
 					symbol = GREEN_CHECKMARK;
 				}
 
-				console.log(symbol, shortMd5, '', date, '', title);
+				console.log(symbol, shortMd5, '', date, '', title, '(' + formatDuration(duration) + ')');
 			});
 		}
 	});
@@ -550,6 +581,8 @@ function refreshPodcast(podcast) {
 				return episode.guid == item.guid;
 			});
 
+			let duration = sanitizeDuration(item.itunes.duration);
+
 			if (!existingEpisode) {
 				let newEpisode = {
 					guid: item.guid,
@@ -557,6 +590,7 @@ function refreshPodcast(podcast) {
 					date: item.pubDate,
 					title: item.title,
 					url: item.enclosure.url,
+					duration: duration,
 					bookmarkTime: 0,
 					listened: false,
 					queuedUp: false
@@ -564,10 +598,10 @@ function refreshPodcast(podcast) {
 
 				podcast.episodes.push(newEpisode);
 
-				console.log(GREEN_PLUS + ' ' + newEpisode.md5.substring(0, 8) + '  ' + (new Date(newEpisode.date)).toDateString() + '  ' + podcast.name + ': ' + newEpisode.title);
+				console.log(GREEN_PLUS + ' ' + newEpisode.md5.substring(0, 8) + '  ' + (new Date(newEpisode.date)).toDateString() + '  ' + podcast.name + ': ' + newEpisode.title + ' (' + formatDuration(duration) + ')');
 			}
 			else {
-				existingEpisode.date = item.pubDate;
+				existingEpisode.duration = duration;
 			}
 		});
 
@@ -601,6 +635,31 @@ function removeCommand(cliOptions) {
 	savePodcastDatabase(dbFilename, newPodcastDatabase);
 
 	process.exit(0);
+}
+
+function sanitizeDuration(unsanitizedDuration) {
+	let sanitizedDuration = 0;
+
+	if (parseInt(unsanitizedDuration) != unsanitizedDuration) {
+		let digits = unsanitizedDuration.split(/:/).reverse();
+
+		digits.forEach(function(digit, i) {
+			if (i == 0) {
+				sanitizedDuration += parseInt(digit);
+			}
+			else if (i == 1) {
+				sanitizedDuration += 60 * parseInt(digit);
+			}
+			else if (i == 2) {
+				sanitizedDuration += 60 * 60 * parseInt(digit);
+			}
+		});
+	}
+	else {
+		sanitizedDuration = parseInt(unsanitizedDuration);
+	}
+
+	return sanitizedDuration;
 }
 
 function savePodcastDatabase(dbFilename, podcastDatabase) {
@@ -699,7 +758,7 @@ function stageCommand(cliOptions) {
 			let { podcast, episode } = fulfilledData;
 
 			shuffleDatabase.addEpisode(new ShuffleDatabaseEpisode('/' + episodeFilename, episode.bookmarkTime || 0xffffff, (episode.bookmarkTime != undefined && episode.bookmarkTime != 0 && episode.bookmarkTime != 0xffffff) ? 1.5 : podcast.playlistPriority));
-			console.log(GREEN_PLUS + ' ' + episode.md5.substring(0, 8) + '  ' + (new Date(episode.date)).toDateString() + '  ' + podcast.name + ': ' + episode.title);
+			console.log(GREEN_PLUS + ' ' + episode.md5.substring(0, 8) + '  ' + (new Date(episode.date)).toDateString() + '  ' + podcast.name + ': ' + episode.title + ' (' + formatDuration(episode.duration) + ')');
 		}));
 	});
 
