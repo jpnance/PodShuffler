@@ -1,0 +1,71 @@
+_podshuffler()
+{
+	local current previous podshuffler_command
+	COMPREPLY=()
+	current="${COMP_WORDS[COMP_CWORD]}"
+	previous="${COMP_WORDS[COMP_CWORD-1]}"
+	podshuffler_command=${COMP_WORDS[1]}
+	commands="add clean edit help init list mark pull push refresh remove stage"
+
+	case "${podshuffler_command}" in
+		add)
+			local options="--db --dry-run --help --episode-order --playlist-priority --short-name"
+			COMPREPLY=( $(compgen -W "${options}" -- ${current}) )
+			return 0
+			;;
+		clean)
+			local options="--dry-run --help --stage"
+			COMPREPLY=( $(compgen -W "${options}" -- ${current}) )
+			return 0
+			;;
+		edit)
+			local options="--db --episode-order --feed-url --help --playlist-priority"
+			COMPREPLY=( $(compgen -W "${options}" -- ${current}) )
+			return 0
+			;;
+		help)
+			COMPREPLY=( $(compgen -W "${commands}" -- ${current}) )
+			return 0
+			;;
+		list)
+			local options="--db --help --podcast --reverse"
+			COMPREPLY=( $(compgen -W "${options}" -- ${current}) )
+			return 0
+			;;
+		mark)
+			local options="--all --db --episode --help --listened --podcast --queued --unlistened --unqueued"
+			COMPREPLY=( $(compgen -W "${options}" -- ${current}) )
+			return 0
+			;;
+		pull)
+			local options="--db --help"
+			COMPREPLY=( $(compgen -W "${options}" -- ${current}) )
+			return 0
+			;;
+		push)
+			local options="--db --help --stage"
+			COMPREPLY=( $(compgen -W "${options}" -- ${current}) )
+			return 0
+			;;
+		refresh)
+			local options="--db --dry-run --help"
+			COMPREPLY=( $(compgen -W "${options}" -- ${current}) )
+			return 0
+			;;
+		remove)
+			local options="--db --help"
+			COMPREPLY=( $(compgen -W "${options}" -- ${current}) )
+			return 0
+			;;
+		stage)
+			local options="--db --dry-run --help --stage"
+			COMPREPLY=( $(compgen -W "${options}" -- ${current}) )
+			return 0
+			;;
+		*)
+			COMPREPLY=( $(compgen -W "${commands}" -- ${current}) )
+			;;
+	esac
+}
+
+complete -F _podshuffler podshuffler
