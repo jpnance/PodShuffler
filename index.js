@@ -317,6 +317,7 @@ function helpCommand(cliOptions) {
 		console.log('  clean    Remove unneeded podcast files from the staging area');
 		console.log('  edit     Modify the settings of an existing podcast');
 		console.log('  help     Show more information about a command');
+		console.log('  init     Initialize your podcast database');
 		console.log('  list     Show high-level podcast information');
 		console.log('  mark     Mark episodes as listened or unlistened');
 		console.log('  pull     Fetch and merge play data from the iPod Shuffle');
