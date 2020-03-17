@@ -35,12 +35,9 @@ if (cliOptions['help']) {
 	else {
 		helpCommand(getopts(cliOptions._.slice(1)));
 	}
-
-	process.exit();
 }
 else if (cliOptions._.includes('--help')) {
 	helpCommand({ _: [ command ] });
-	process.exit();
 }
 else if (cliOptions['version']) {
 	console.log('podshuffler version 1');
@@ -54,8 +51,7 @@ else if (!commands.includes(command)) {
 	console.error('podshuffler: \'' + command + '\' is not a podshuffler command. Try `podshuffler help`.');
 	process.exit(1);
 }
-
-if (command == 'add') {
+else if (command == 'add') {
 	addCommand(getopts(cliOptions._.slice(1), { default: { db: DEFAULTS.dbFilename, 'dry-run': false, 'playlist-priority': 0, 'episode-order': 'newest-first' } }));
 }
 else if (command == 'backfill') {
