@@ -4,6 +4,8 @@
 .SH NAME
 podshuffler-mark \- modify the state of one or many podcast episodes
 .SH SYNOPSIS
+.B podshuffler mark --help
+.br
 .B podshuffler mark
 \fB--all\fR
 [\fB--db\fR <filename>]
@@ -24,6 +26,11 @@ podshuffler-mark \- modify the state of one or many podcast episodes
 .SH DESCRIPTION
 This command allows you to mark--individually or in bulk--podcast episodes as listened, unlistened, queued for staging, or unqueued. It's easy to accidentally end up changing a lot of data so at least one of \fB--all\fR, \fB--podcast\fR, and \fB--episode\fR must be specified for anything to happen. Pairing \fB--podcast\fR with \fB--episode\fR is allowed and will speed things up ever so slightly.
 .SH OPTIONS
+.PP
+\fB--help\fR
+.RS
+Print help about the \fBpodshuffler-mark\fR(1) command.
+.RE
 .PP
 \fB--db\fR=<filename>
 .RS

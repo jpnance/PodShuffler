@@ -4,6 +4,8 @@
 .SH NAME
 podshuffler-push \- copy podcasts from the staging area onto your iPod Shuffle
 .SH SYNOPSIS
+.B podshuffler push --help
+.br
 .B podshuffler push
 [\fB--stage\fR <path>]
 <iPod path>
@@ -12,6 +14,11 @@ This command will read the iTunesSD file from the staging path and copy any podc
 .PP
 Although \fB--dry-run\fR is not available, you can simulate the results of this command by specifying a regular directory as your <iPod Path>. Files will be copied over as usual but your iPod Shuffle will not be accessed.
 .SH OPTIONS
+.PP
+\fB--help\fR
+.RS
+Print help about the \fBpodshuffler-push\fR(1) command.
+.RE
 .PP
 \fB--stage\fR=<path>
 .RS

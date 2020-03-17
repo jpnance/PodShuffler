@@ -4,6 +4,8 @@
 .SH NAME
 podshuffler-edit \- modify an existing podcast's settings
 .SH SYNOPSIS
+.B podshuffler edit --help
+.br
 .B podshuffler edit
 [\fB--db\fR <filename>]
 [\fB--feed-url\fR <feed URL>]
@@ -13,6 +15,11 @@ podshuffler-edit \- modify an existing podcast's settings
 .SH DESCRIPTION
 This command allows you to change the way Podshuffler will download new episodes for an existing podcast. For example, if a podcast changes its feed URL, you can update it; you may also find yourself interested in making a podcast appear earlier or later on your playlist. Nothing will be done unless one of \fB--feed-url\fR, \fB--playlist-priority\fR, or \fB--episode-order\fR are specified but you're allowed to specify any combination of them.
 .SH OPTIONS
+.PP
+\fB--help\fR
+.RS
+Print help about the \fBpodshuffler-edit\fR(1) command.
+.RE
 .PP
 \fB--db\fR=<filename>
 .RS

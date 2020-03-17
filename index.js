@@ -29,7 +29,18 @@ let cliOptions = getopts(process.argv.slice(2), { stopEarly: true });
 let command = cliOptions._[0];
 
 if (cliOptions['help']) {
-	helpCommand(getopts(cliOptions._.slice(1)));
+	if (cliOptions['help'] !== true) {
+		helpCommand({ _: [ cliOptions['help'] ] });
+	}
+	else {
+		helpCommand(getopts(cliOptions._.slice(1)));
+	}
+
+	process.exit();
+}
+else if (cliOptions._.includes('--help')) {
+	helpCommand({ _: [ command ] });
+	process.exit();
 }
 else if (cliOptions['version']) {
 	console.log('podshuffler version 1');
@@ -299,7 +310,7 @@ function formatDuration(duration) {
 	return formattedDuration;
 };
 
-function helpCommand(cliOptions, exitCode) {
+function helpCommand(cliOptions) {
 	const spawn = require('child_process').spawn;
 
 	if (!cliOptions || !cliOptions._ || cliOptions._.length == 0) {
@@ -320,6 +331,9 @@ function helpCommand(cliOptions, exitCode) {
 	}
 	else if (commands.includes(cliOptions._[0])) {
 		spawn('man', [ path.resolve(process.env._, '../../lib/node_modules/podshuffler/doc/podshuffler-' + cliOptions._[0] + '.1') ], { stdio: 'inherit' });
+	}
+	else {
+		console.error('podshuffler: \'' + cliOptions._[0] + '\' is not a podshuffler command. Try `podshuffler help`.');
 	}
 }
 

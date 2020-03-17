@@ -4,12 +4,19 @@
 .SH NAME
 podshuffler-pull \- fetch and merge your podcast playback data into your database
 .SH SYNOPSIS
+.B podshuffler pull --help
+.br
 .B podshuffler pull
 [\fB--db\fR <filename>]
 <iPod path>
 .SH DESCRIPTION
 This command fetches your podcast playback data from your iPod Shuffle (mounted at <iPod path>) and merges it into your podcast database. This process will preserve bookmark data so that a podcast you were listening to will pick up right where you left off. For the most part, this command only serves to let \fBpodshuffler-stage\fR(1) know which episodes you've already listened to so it can queue up some new ones for you in the future.
 .SH OPTIONS
+.PP
+\fB--help\fR
+.RS
+Print help about the \fBpodshuffler-pull\fR(1) command.
+.RE
 .PP
 \fB--db\fR=<filename>
 .RS

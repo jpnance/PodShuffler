@@ -5,6 +5,8 @@
 podshuffler-init \- initializes Podshuffler on this system
 .SH SYNOPSIS
 .B podshuffler init
+.br
+.B podshuffler init --help
 .SH DESCRIPTION
 This command creates the following files and directories:
 .RS
@@ -12,4 +14,10 @@ This command creates the following files and directories:
 \fI$HOME/.local/share/podshuffler/podcasts.json\fR, the file that will be used as your default podcast database.
 .IP \(bu
 \fI$HOME/.cache/podshuffler\fR, the directory that will be used as your default staging area.
+.RE
+.SH OPTIONS
+.PP
+\fB--help\fR
+.RS
+Print help about the \fBpodshuffler-init\fR(1) command.
 .RE

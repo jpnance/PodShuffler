@@ -4,11 +4,16 @@
 .SH NAME
 podshuffler-add \- add a new podcast to your database
 .SH SYNOPSIS
+.B podshuffler add --help
 .B podshuffler add
 [\fB--db\fR <filename>] [\fB--short-name\fR <short name>] [\fB--playlist-priority\fR <number>] [\fB--episode-order\fR <episode order>] [\fB--dry-run\fR] <feed URL>
 .SH DESCRIPTION
 This command adds a new podcast to your database. The only required field is a URL to that podcast\'s RSS feed, starting with either "http://" or "https://".
 .SH OPTIONS
+.PP
+\fB--help\fR
+.RS
+Print help about \fBpodshuffler-add\fR(1).
 .PP
 \fB--db\fR=<filename>
 .RS

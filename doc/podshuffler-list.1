@@ -4,11 +4,18 @@
 .SH NAME
 podshuffler-list \- output human-readable information about podcasts and episodes
 .SH SYNOPSIS
+.B podshuffler list --help
+.br
 .B podshuffler list
 [\fB--db\fR <filename>] [\fB--podcast\fR <short name> [\fB--reverse\fR]]
 .SH DESCRIPTION
 Without any arguments, this will print out detailed information about every podcast in your Podshuffler database. If \fB--podcast\fR is specified, it will print out the same information for that podcast along with a list of every known episode of that podcast.
 .SH OPTIONS
+.PP
+\fB--help\fR
+.RS
+Print help about the \fBpodshuffler-list\fR(1) command.
+.RE
 .PP
 \fB--db\fR=<filename>
 .RS

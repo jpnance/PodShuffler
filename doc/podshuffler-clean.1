@@ -4,12 +4,19 @@
 .SH NAME
 podshuffler-clean \- remove unneeded podcast files from the staging area
 .SH SYNOPSIS
+.B podshuffler clean --help
+.br
 .B podshuffler clean
 [\fB--stage\fR <path>]
 [\fB--dry-run\fR]
 .SH DESCRIPTION
 This command will remove any unnecessary files (typically MP3s) from the Podshuffler staging area (see \fBpodshuffler-stage\fR(1)) and report how much disk space you saved in so doing.
 .SH OPTIONS
+.PP
+\fB--help\fR
+.RS
+Print help about the \fBpodshuffler-clean\fR(1) command.
+.RE
 .PP
 \fB--stage\fR=<path>
 .RS

@@ -4,6 +4,8 @@
 .SH NAME
 podshuffler-stage \- get everything ready to be pushed to your iPod Shuffle
 .SH SYNOPSIS
+.B podshuffler stage --help
+.br
 .B podshuffler stage
 [\fB--db\fR <filename>]
 [\fB--stage\fR <path>]
@@ -39,6 +41,11 @@ After selecting one (or zero) episodes from each podcast, they'll be downloaded 
 .PP
 After the playlist is ordered and all of its episodes downloaded, the iTunes-specific files that are needed for iPod Shuffle playback will be generated and placed in the staging path. You can learn more about the formats of these files (iTunesPState, iTunesSD, and iTunesStats) at http://www.ipodlinux.org/ITunesDB/.
 .SH OPTIONS
+.PP
+\fB--help\fR
+.RS
+Print help about the \fBpodshuffler-stage\fR(1) command.
+.RE
 .PP
 \fB--db\fR=<filename>
 .RS

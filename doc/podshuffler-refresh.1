@@ -4,12 +4,19 @@
 .SH NAME
 podshuffler-refresh \- update all of your podcast feeds
 .SH SYNOPSIS
+.B podshuffler refresh --help
+.br
 .B podshuffler refresh
 [\fB--db\fR <filename>]
 [\fB--dry-run\fR]
 .SH DESCRIPTION
 This command goes through each podcast in your database, requests the latest version of its feed URL, and adds the information for any new episodes into your database. It doesn't actually download audio files for those episodes (only \fBpodshuffler-stage\fR(1) does that).
 .SH OPTIONS
+.PP
+\fB--help\fR
+.RS
+Print help about the \fBpodshuffler-refresh\fR(1) command.
+.RE
 .PP
 \fB--db\fR=<filename>
 .RS
