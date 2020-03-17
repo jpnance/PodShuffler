@@ -1,11 +1,12 @@
 _podshuffler()
 {
 	local current previous podshuffler_command
-	COMPREPLY=()
 	current="${COMP_WORDS[COMP_CWORD]}"
 	previous="${COMP_WORDS[COMP_CWORD-1]}"
 	podshuffler_command=${COMP_WORDS[1]}
 	commands="add clean edit help init list mark pull push refresh remove stage"
+
+	COMPREPLY=()
 
 	case "${podshuffler_command}" in
 		add)
@@ -64,8 +65,9 @@ _podshuffler()
 			;;
 		*)
 			COMPREPLY=( $(compgen -W "${commands}" -- ${current}) )
+			return 0
 			;;
 	esac
 }
 
-complete -F _podshuffler podshuffler
+complete -o plusdirs -F _podshuffler podshuffler
