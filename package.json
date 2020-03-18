@@ -15,5 +15,8 @@
   },
   "bin": {
     "podshuffler": "./index.js"
+  },
+  "directories": {
+    "man": "./doc/man"
   }
 }
