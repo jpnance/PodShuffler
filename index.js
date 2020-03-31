@@ -695,6 +695,17 @@ function stageCommand(cliOptions) {
 
 		if (queuedUpEpisode) {
 			episode = queuedUpEpisode;
+
+			if (podcast.episodeOrder == 'newest-only') {
+				if (queuedUpEpisode != podcast.episodes[0]) {
+					queuedUpEpisode.queuedUp = false;
+					episode = podcast.episodes[0];
+				}
+
+				if (episode.listened) {
+					return;
+				}
+			}
 		}
 		else {
 			if (podcast.episodeOrder == 'newest-only') {
