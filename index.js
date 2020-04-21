@@ -741,6 +741,9 @@ function stageCommand(cliOptions) {
 		if (!episode) {
 			return;
 		}
+		else {
+			episode.queuedUp = true;
+		}
 
 		let episodeFilename = podcast.shortName + '-' + episode.md5.substring(0, 8) + '.mp3';
 
