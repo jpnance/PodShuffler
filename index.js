@@ -327,7 +327,7 @@ function helpCommand(cliOptions) {
 		console.log('  stage    Select and download episodes');
 	}
 	else if (commands.includes(cliOptions._[0])) {
-		spawn('man', [ path.resolve(process.env._, '../../lib/node_modules/podshuffler/doc/podshuffler-' + cliOptions._[0] + '.1') ], { stdio: 'inherit' });
+		spawn('man', [ path.resolve(process.env._, '../../lib/node_modules/podshuffler/doc/man/podshuffler-' + cliOptions._[0] + '.1') ], { stdio: 'inherit' });
 	}
 	else {
 		console.error('podshuffler: \'' + cliOptions._[0] + '\' is not a podshuffler command. Try `podshuffler help`.');
